@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Moon, Sun } from "lucide-react";
+import { useLocation } from "wouter";
+import { Sparkles, Moon, Sun, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const { login, isLoggingIn } = useAuth();
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
+  const [, navigate] = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,14 +37,23 @@ export default function LoginPage() {
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Theme toggle button */}
-        <button
-          onClick={toggleTheme}
-          className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-xl bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-sm"
-          aria-label="Alternar tema"
-        >
-          {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+        {/* Top bar actions */}
+        <div className="absolute top-5 left-5 right-5 z-20 flex items-center justify-between">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-sm"
+            aria-label="Alternar tema"
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
 
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
@@ -92,7 +103,9 @@ export default function LoginPage() {
           
           <p className="text-center text-sm text-muted-foreground mt-8">
             Quer usar o Trancify no seu salão? <br/>
-            <a href="https://trancify.com" className="text-primary font-semibold hover:underline">Fale com nossa equipe</a>
+            <button onClick={() => navigate("/")} className="text-primary font-semibold hover:underline">
+              Conheça a plataforma
+            </button>
           </p>
         </motion.div>
       </div>
