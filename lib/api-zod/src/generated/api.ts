@@ -64,6 +64,18 @@ export const ChangePasswordResponse = zod.object({
 });
 
 /**
+ * @summary Change email
+ */
+export const ChangeEmailBody = zod.object({
+  currentPassword: zod.string(),
+  newEmail: zod.string(),
+});
+
+export const ChangeEmailResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * @summary Get current tenant profile
  */
 export const GetMyTenantResponse = zod.object({

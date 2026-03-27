@@ -62,6 +62,11 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ChangeEmailRequest {
+  currentPassword: string;
+  newEmail: string;
+}
+
 export type TenantStatus = (typeof TenantStatus)[keyof typeof TenantStatus];
 
 export const TenantStatus = {

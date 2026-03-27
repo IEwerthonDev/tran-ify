@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useGetMyTenant, useUpdateMyTenant } from "@workspace/api-client-react";
-import { useChangePassword } from "@workspace/api-client-react";
+import { useChangePassword, useChangeEmail } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Save, KeyRound, Store, ExternalLink, Palette, ChevronRight, Sparkles, Upload, Link, X, ImageIcon, Globe } from "lucide-react";
+import { Save, KeyRound, Mail, Store, ExternalLink, Palette, ChevronRight, Sparkles, Upload, Link, X, ImageIcon, Globe } from "lucide-react";
 import { useUpload } from "@workspace/object-storage-web";
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -34,6 +34,7 @@ export default function ConfiguracoesPage() {
   const { data: tenant, isLoading } = useGetMyTenant();
   const updateMutation = useUpdateMyTenant();
   const changePasswordMutation = useChangePassword();
+  const changeEmailMutation = useChangeEmail();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState({
@@ -45,6 +46,12 @@ export default function ConfiguracoesPage() {
     secondaryColor: DEFAULT_SECONDARY,
   });
   const [slugError, setSlugError] = useState("");
+
+  const [emails, setEmails] = useState({
+    currentPassword: "",
+    newEmail: "",
+    confirmEmail: "",
+  });
 
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -104,6 +111,40 @@ export default function ConfiguracoesPage() {
         toast({ title: "Link já em uso", description: "Escolha outro endereço.", variant: "destructive" });
       } else {
         toast({ title: "Erro ao salvar perfil", variant: "destructive" });
+      }
+    }
+  };
+
+  const handleChangeEmail = async () => {
+    if (!emails.newEmail) {
+      toast({ title: "Informe o novo e-mail", variant: "destructive" });
+      return;
+    }
+    if (emails.newEmail !== emails.confirmEmail) {
+      toast({ title: "Os e-mails não coincidem", variant: "destructive" });
+      return;
+    }
+    if (!emails.currentPassword) {
+      toast({ title: "Informe sua senha atual para confirmar", variant: "destructive" });
+      return;
+    }
+    try {
+      await changeEmailMutation.mutateAsync({
+        data: {
+          currentPassword: emails.currentPassword,
+          newEmail: emails.newEmail,
+        },
+      });
+      toast({ title: "E-mail alterado com sucesso!", description: "Faça login novamente com o novo e-mail." });
+      setEmails({ currentPassword: "", newEmail: "", confirmEmail: "" });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? "";
+      if (msg.includes("uso")) {
+        toast({ title: "E-mail já em uso", description: "Escolha outro endereço.", variant: "destructive" });
+      } else if (msg.includes("incorreta") || err?.response?.status === 401) {
+        toast({ title: "Senha atual incorreta", variant: "destructive" });
+      } else {
+        toast({ title: "Erro ao alterar e-mail", variant: "destructive" });
       }
     }
   };
@@ -323,6 +364,54 @@ export default function ConfiguracoesPage() {
                   salonName={profile.name || tenant?.name || "Seu Salão"}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Change Email Card */}
+          <div className="bg-card p-8 rounded-[2rem] border border-border/50 shadow-xl shadow-black/5">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
+                <Mail className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-display font-bold">Alterar E-mail</h2>
+            </div>
+
+            <div className="space-y-5 max-w-md">
+              <Field label="Novo e-mail">
+                <Input
+                  type="email"
+                  value={emails.newEmail}
+                  onChange={(e) => setEmails({ ...emails, newEmail: e.target.value })}
+                  placeholder="novo@email.com"
+                  className="h-12"
+                />
+              </Field>
+              <Field label="Confirmar novo e-mail">
+                <Input
+                  type="email"
+                  value={emails.confirmEmail}
+                  onChange={(e) => setEmails({ ...emails, confirmEmail: e.target.value })}
+                  placeholder="Repita o novo e-mail"
+                  className="h-12"
+                />
+              </Field>
+              <Field label="Senha atual (para confirmar)">
+                <Input
+                  type="password"
+                  value={emails.currentPassword}
+                  onChange={(e) => setEmails({ ...emails, currentPassword: e.target.value })}
+                  placeholder="••••••••"
+                  className="h-12"
+                />
+              </Field>
+              <Button
+                size="lg"
+                className="px-8 h-12 rounded-xl bg-blue-600 hover:bg-blue-700"
+                onClick={handleChangeEmail}
+                disabled={changeEmailMutation.isPending}
+              >
+                {changeEmailMutation.isPending ? "Alterando..." : "Alterar E-mail"}
+              </Button>
             </div>
           </div>
 

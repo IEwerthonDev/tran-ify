@@ -16,6 +16,11 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(6),
 });
 
+const changeEmailSchema = z.object({
+  currentPassword: z.string().min(1),
+  newEmail: z.string().email(),
+});
+
 router.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -127,6 +132,45 @@ router.post("/change-password", requireAuth, async (req: AuthRequest, res) => {
     res.json({ message: "Senha alterada com sucesso" });
   } catch (err) {
     req.log.error({ err }, "Change password error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno" });
+  }
+});
+
+router.post("/change-email", requireAuth, async (req: AuthRequest, res) => {
+  const parsed = changeEmailSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "ValidationError", message: "Dados inválidos" });
+    return;
+  }
+
+  const { currentPassword, newEmail } = parsed.data;
+
+  try {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
+
+    if (!user) {
+      res.status(404).json({ error: "NotFound", message: "Usuário não encontrado" });
+      return;
+    }
+
+    const valid = await comparePassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "Unauthorized", message: "Senha atual incorreta" });
+      return;
+    }
+
+    const emailLower = newEmail.toLowerCase();
+    const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, emailLower)).limit(1);
+    if (existing && existing.id !== user.id) {
+      res.status(409).json({ error: "Conflict", message: "Este e-mail já está em uso" });
+      return;
+    }
+
+    await db.update(usersTable).set({ email: emailLower, updatedAt: new Date() }).where(eq(usersTable.id, user.id));
+
+    res.json({ message: "E-mail alterado com sucesso" });
+  } catch (err) {
+    req.log.error({ err }, "Change email error");
     res.status(500).json({ error: "InternalError", message: "Erro interno" });
   }
 });

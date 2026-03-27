@@ -43,6 +43,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const adminNav = [
     { name: "Visão Geral", href: "/admin", icon: LayoutDashboard },
     { name: "Trancistas", href: "/admin/tenants", icon: Users },
+    { name: "Minha Conta", href: "/admin/conta", icon: Settings },
   ];
 
   const navItems = isSuperAdmin ? adminNav : tenantNav;

@@ -28,6 +28,7 @@ export * from "./availableSlots";
 export * from "./bookAppointmentRequest";
 export * from "./bookAppointmentRequestBraidSize";
 export * from "./bookAppointmentRequestPaymentMethod";
+export * from "./changeEmailRequest";
 export * from "./changePasswordRequest";
 export * from "./createServiceRequest";
 export * from "./errorResponse";

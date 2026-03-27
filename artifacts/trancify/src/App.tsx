@@ -16,6 +16,7 @@ import ConfiguracoesPage from "@/pages/dashboard/configuracoes";
 import RelatoriosPage from "@/pages/dashboard/relatorios";
 import AdminOverview from "@/pages/admin/index";
 import AdminTenants from "@/pages/admin/tenants";
+import AdminContaPage from "@/pages/admin/conta";
 import PublicBookingPage from "@/pages/public/booking";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ function Router() {
       {/* Admin Routes */}
       <Route path="/admin" component={() => <ProtectedRoute component={AdminOverview} allowedRole="super_admin" />} />
       <Route path="/admin/tenants" component={() => <ProtectedRoute component={AdminTenants} allowedRole="super_admin" />} />
+      <Route path="/admin/conta" component={() => <ProtectedRoute component={AdminContaPage} allowedRole="super_admin" />} />
 
       {/* Public Booking Route - MUST be last as it's a catch-all for slugs */}
       <Route path="/:slug" component={PublicBookingPage} />
