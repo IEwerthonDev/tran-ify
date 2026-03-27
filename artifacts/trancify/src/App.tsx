@@ -11,11 +11,15 @@ import DashboardHome from "@/pages/dashboard/index";
 import ServicosPage from "@/pages/dashboard/servicos";
 import AgendamentosPage from "@/pages/dashboard/agendamentos";
 import DisponibilidadePage from "@/pages/dashboard/disponibilidade";
+import AgendaPage from "@/pages/dashboard/agenda";
+import ConfiguracoesPage from "@/pages/dashboard/configuracoes";
+import RelatoriosPage from "@/pages/dashboard/relatorios";
+import AdminOverview from "@/pages/admin/index";
+import AdminTenants from "@/pages/admin/tenants";
 import PublicBookingPage from "@/pages/public/booking";
 
 const queryClient = new QueryClient();
 
-// Simple Protected Route Wrapper
 function ProtectedRoute({ component: Component, allowedRole }: { component: any, allowedRole?: string }) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
@@ -35,11 +39,6 @@ function ProtectedRoute({ component: Component, allowedRole }: { component: any,
   return <Component />;
 }
 
-// Temporary placeholders for missing pages to satisfy completeness routing
-function TempPage({ title }: { title: string }) {
-  return <div className="p-10"><h1 className="text-3xl font-bold">{title} (Em construção)</h1></div>;
-}
-
 function Router() {
   return (
     <Switch>
@@ -50,13 +49,13 @@ function Router() {
       <Route path="/dashboard/servicos" component={() => <ProtectedRoute component={ServicosPage} allowedRole="tenant" />} />
       <Route path="/dashboard/agendamentos" component={() => <ProtectedRoute component={AgendamentosPage} allowedRole="tenant" />} />
       <Route path="/dashboard/disponibilidade" component={() => <ProtectedRoute component={DisponibilidadePage} allowedRole="tenant" />} />
-      <Route path="/dashboard/agenda" component={() => <ProtectedRoute component={() => <TempPage title="Agenda Calendário" />} allowedRole="tenant" />} />
-      <Route path="/dashboard/configuracoes" component={() => <ProtectedRoute component={() => <TempPage title="Configurações do Salão" />} allowedRole="tenant" />} />
-      <Route path="/dashboard/relatorios" component={() => <ProtectedRoute component={() => <TempPage title="Relatórios Financeiros" />} allowedRole="tenant" />} />
+      <Route path="/dashboard/agenda" component={() => <ProtectedRoute component={AgendaPage} allowedRole="tenant" />} />
+      <Route path="/dashboard/configuracoes" component={() => <ProtectedRoute component={ConfiguracoesPage} allowedRole="tenant" />} />
+      <Route path="/dashboard/relatorios" component={() => <ProtectedRoute component={RelatoriosPage} allowedRole="tenant" />} />
       
       {/* Admin Routes */}
-      <Route path="/admin" component={() => <ProtectedRoute component={() => <TempPage title="Admin Visão Geral" />} allowedRole="super_admin" />} />
-      <Route path="/admin/tenants" component={() => <ProtectedRoute component={() => <TempPage title="Gerenciar Tenants" />} allowedRole="super_admin" />} />
+      <Route path="/admin" component={() => <ProtectedRoute component={AdminOverview} allowedRole="super_admin" />} />
+      <Route path="/admin/tenants" component={() => <ProtectedRoute component={AdminTenants} allowedRole="super_admin" />} />
 
       {/* Public Booking Route - MUST be last as it's a catch-all for slugs */}
       <Route path="/:slug" component={PublicBookingPage} />

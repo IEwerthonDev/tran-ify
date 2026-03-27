@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { db, appointmentsTable, servicesTable, availabilityTable } from "@workspace/db";
+import { db, appointmentsTable, servicesTable, availabilityTable, tenantsTable } from "@workspace/db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { requireTenant, type AuthRequest } from "../lib/auth.js";
 import { computeAvailableSlots } from "../lib/availability.js";
+import { sendBookingNotification } from "../lib/whatsapp.js";
 import { z } from "zod";
 
 const router = Router();
@@ -187,6 +188,29 @@ router.post("/book", async (req, res) => {
         status: "pending",
       })
       .returning();
+
+    const [tenant] = await db.select().from(tenantsTable).where(eq(tenantsTable.id, data.tenantId)).limit(1);
+
+    if (tenant?.whatsapp) {
+      sendBookingNotification({
+        tenantPhone: tenant.whatsapp,
+        tenantName: tenant.name,
+        clientName: data.clientName,
+        clientPhone: data.clientPhone ?? null,
+        clientAge: data.clientAge ?? null,
+        serviceName: service.name,
+        braidSize: data.braidSize,
+        servicePrice,
+        paymentMethod: data.paymentMethod,
+        date: data.date,
+        time: data.time,
+        hairDescription: data.hairDescription ?? null,
+        referencePhotos: data.referencePhotos ?? [],
+        notes: data.notes ?? null,
+      }).catch((err) => {
+        req.log.warn({ err }, "WhatsApp notification failed — booking still saved");
+      });
+    }
 
     res.status(201).json(formatAppointment(appointment!));
   } catch (err) {

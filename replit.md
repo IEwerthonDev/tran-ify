@@ -87,6 +87,16 @@ All routes at `/api`:
 - **Services**: 9 default braid services seeded for demo tenant
 - **Profit**: servicePrice - materialCost (material cost entered by tenant after appointment)
 
+## WhatsApp Notifications (Z-API)
+
+When a new appointment is booked, a WhatsApp message is automatically sent to the tenant's registered phone number (with client info and reference photos). Requires a Z-API account:
+
+- `ZAPI_INSTANCE_ID` — Your Z-API instance ID
+- `ZAPI_TOKEN` — Your Z-API token
+- `ZAPI_CLIENT_TOKEN` — (Optional) Your Z-API client token
+
+If these variables are not set, the notification is silently skipped and the booking still works normally.
+
 ## Running Locally
 
 ```bash
