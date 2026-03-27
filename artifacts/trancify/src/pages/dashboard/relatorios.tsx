@@ -41,9 +41,9 @@ export default function RelatoriosPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-10">
-        <h1 className="text-4xl font-display font-bold text-foreground">Relatórios Financeiros</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Acompanhe sua receita, custos e lucro real.</p>
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground">Relatórios Financeiros</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-base sm:text-lg">Acompanhe sua receita, custos e lucro real.</p>
       </div>
 
       {/* Period selector */}
@@ -64,7 +64,7 @@ export default function RelatoriosPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-10">
         <StatCard
           title="Agendamentos"
           value={isLoading ? "..." : String(report?.totalAppointments ?? 0)}
@@ -97,8 +97,8 @@ export default function RelatoriosPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Monthly Chart */}
-        <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-8">
-          <h2 className="text-2xl font-display font-bold mb-8">Receita vs. Lucro por Mês</h2>
+        <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-display font-bold mb-5 sm:mb-8">Receita vs. Lucro por Mês</h2>
           {chartData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-muted-foreground">
               Nenhum dado no período selecionado.
@@ -133,8 +133,8 @@ export default function RelatoriosPage() {
         </div>
 
         {/* Status breakdown */}
-        <div className="bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-8">
-          <h2 className="text-xl font-display font-bold mb-6">Por Status</h2>
+        <div className="bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
+          <h2 className="text-lg sm:text-xl font-display font-bold mb-5 sm:mb-6">Por Status</h2>
           <div className="space-y-4">
             {Object.entries(appointmentsByStatus).length === 0 ? (
               <p className="text-sm text-muted-foreground">Sem dados no período.</p>
@@ -189,17 +189,17 @@ export default function RelatoriosPage() {
 
 function StatCard({ title, value, icon: Icon, color, trend }: any) {
   return (
-    <div className="bg-card p-6 rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group">
+    <div className="bg-card p-4 sm:p-6 rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group">
       <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-20 transition-transform group-hover:scale-150 ${color}`} />
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <h3 className="text-muted-foreground font-medium text-sm">{title}</h3>
-        <div className={`p-3 rounded-xl ${color}`}>
-          <Icon className="w-5 h-5" />
+      <div className="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+        <h3 className="text-muted-foreground font-medium text-xs sm:text-sm leading-tight pr-1">{title}</h3>
+        <div className={`p-2 sm:p-3 rounded-xl shrink-0 ${color}`}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </div>
       <div className="relative z-10">
-        <span className="text-3xl font-bold text-foreground font-display tracking-tight">{value}</span>
-        <p className="text-sm text-muted-foreground mt-2">{trend}</p>
+        <span className="text-xl sm:text-3xl font-bold text-foreground font-display tracking-tight">{value}</span>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{trend}</p>
       </div>
     </div>
   );

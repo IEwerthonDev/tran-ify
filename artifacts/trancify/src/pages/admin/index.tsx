@@ -20,9 +20,9 @@ export default function AdminOverview() {
 
   return (
     <DashboardLayout>
-      <div className="mb-10">
-        <h1 className="text-4xl font-display font-bold text-foreground">Visão Geral da Plataforma</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Estatísticas globais do Trancify.</p>
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground">Visão Geral da Plataforma</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-base sm:text-lg">Estatísticas globais do Trancify.</p>
       </div>
 
       {/* Stats Grid */}
@@ -59,8 +59,8 @@ export default function AdminOverview() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Monthly Chart */}
-        <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-8">
-          <h2 className="text-2xl font-display font-bold mb-8">Agendamentos por Mês</h2>
+        <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-display font-bold mb-5 sm:mb-8">Agendamentos por Mês</h2>
           {chartData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-muted-foreground">
               Nenhum dado disponível ainda.
@@ -90,9 +90,9 @@ export default function AdminOverview() {
         </div>
 
         {/* Recent Tenants */}
-        <div className="bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-display font-bold">Trancistas Recentes</h2>
+        <div className="bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
+          <div className="flex justify-between items-center mb-5 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-display font-bold">Trancistas Recentes</h2>
             <Link href="/admin/tenants" className="text-sm text-primary font-semibold hover:underline">
               Ver todas
             </Link>

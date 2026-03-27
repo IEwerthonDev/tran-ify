@@ -14,7 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, KeyRound, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, KeyRound, ExternalLink, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -31,17 +31,34 @@ export default function AdminTenants() {
 
   return (
     <DashboardLayout>
-      <div className="mb-10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+      <div className="mb-6 sm:mb-10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-4xl font-display font-bold text-foreground">Trancistas</h1>
-          <p className="text-muted-foreground mt-2 text-lg">
+          <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground">Trancistas</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-base sm:text-lg">
             Gerencie todas as profissionais cadastradas na plataforma.
           </p>
         </div>
         <CreateTenantDialog onCreated={refetch} />
       </div>
 
-      <div className="bg-card border border-border/50 rounded-3xl overflow-hidden shadow-xl shadow-black/5">
+      {/* ── Mobile card list ── */}
+      <div className="md:hidden space-y-3">
+        {isLoading
+          ? [1, 2, 3].map(i => (
+              <div key={i} className="h-28 bg-card rounded-2xl border border-border/50 animate-pulse" />
+            ))
+          : tenants?.map((t: any) => (
+              <TenantCard key={t.id} tenant={t} onUpdate={refetch} />
+            ))}
+        {!isLoading && (!tenants || tenants.length === 0) && (
+          <div className="p-10 text-center text-muted-foreground bg-card rounded-2xl border border-border/50">
+            Nenhuma trancista cadastrada ainda.
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop table ── */}
+      <div className="hidden md:block bg-card border border-border/50 rounded-3xl overflow-hidden shadow-xl shadow-black/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -77,6 +94,61 @@ export default function AdminTenants() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+function TenantCard({ tenant, onUpdate }: { tenant: any; onUpdate: () => void }) {
+  return (
+    <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+            {tenant.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold text-foreground truncate">{tenant.name}</p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span>/{tenant.slug}</span>
+              <a
+                href={`/${tenant.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline inline-flex items-center"
+              >
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+        <span
+          className={`px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 ${
+            tenant.status === "active"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          {tenant.status === "active" ? "Ativa" : "Bloqueada"}
+        </span>
+      </div>
+
+      <div className="text-xs text-muted-foreground mb-3 space-y-1">
+        <p className="truncate">{tenant.email}</p>
+        <div className="flex items-center justify-between">
+          <span className="capitalize font-medium text-foreground">{tenant.plan}</span>
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {tenant.totalAppointments} agendamentos
+          </span>
+        </div>
+        <p>Cadastro: {format(parseISO(tenant.createdAt), "dd/MM/yyyy", { locale: ptBR })}</p>
+      </div>
+
+      <div className="flex items-center gap-1.5 pt-3 border-t border-border/50">
+        <EditTenantDialog tenant={tenant} onUpdated={onUpdate} />
+        <ResetPasswordDialog tenantId={tenant.id} tenantName={tenant.name} />
+        <DeleteTenantDialog tenantId={tenant.id} tenantName={tenant.name} onDeleted={onUpdate} />
+      </div>
+    </div>
   );
 }
 
@@ -159,12 +231,12 @@ function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 rounded-xl h-11 px-5">
+        <Button className="gap-2 rounded-xl h-11 px-5 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           Nova Trancista
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-display">Cadastrar Nova Trancista</DialogTitle>
         </DialogHeader>
@@ -180,7 +252,7 @@ function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
             <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@salao.com" />
           </Field>
           <Field label="Senha inicial">
-            <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 6 caracteres" />
+            <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mínimo 8 caracteres" />
           </Field>
           <Field label="WhatsApp (com DDI)">
             <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="5511999887766" />
@@ -195,9 +267,9 @@ function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
             </select>
           </Field>
         </div>
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleCreate} disabled={createMutation.isPending}>
+        <DialogFooter className="mt-4 flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">Cancelar</Button>
+          <Button onClick={handleCreate} disabled={createMutation.isPending} className="w-full sm:w-auto">
             {createMutation.isPending ? "Criando..." : "Criar Trancista"}
           </Button>
         </DialogFooter>
@@ -278,8 +350,8 @@ function ResetPasswordDialog({ tenantId, tenantName }: { tenantId: string; tenan
   const { toast } = useToast();
 
   const handleReset = async () => {
-    if (password.length < 6) {
-      toast({ title: "Senha muito curta (mínimo 6 caracteres)", variant: "destructive" });
+    if (password.length < 8) {
+      toast({ title: "Senha muito curta (mínimo 8 caracteres)", variant: "destructive" });
       return;
     }
     try {
@@ -305,7 +377,7 @@ function ResetPasswordDialog({ tenantId, tenantName }: { tenantId: string; tenan
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <Field label="Nova Senha">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 caracteres" />
           </Field>
         </div>
         <DialogFooter className="mt-4">

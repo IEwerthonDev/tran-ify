@@ -57,23 +57,23 @@ export default function AgendaPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-10">
-        <h1 className="text-4xl font-display font-bold text-foreground">Agenda</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Visualize seus agendamentos no calendário.</p>
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground">Agenda</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-base sm:text-lg">Visualize seus agendamentos no calendário.</p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
         {/* Calendar */}
-        <div className="xl:col-span-2 bg-card rounded-[2rem] border border-border/50 shadow-xl shadow-black/5 p-8">
+        <div className="xl:col-span-2 bg-card rounded-[2rem] border border-border/50 shadow-xl shadow-black/5 p-4 sm:p-8">
           {/* Month Nav */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-5 sm:mb-8">
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
               className="p-2 rounded-xl hover:bg-secondary transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-display font-bold capitalize">
+            <h2 className="text-lg sm:text-2xl font-display font-bold capitalize">
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
             </h2>
             <button
@@ -146,7 +146,7 @@ export default function AgendaPage() {
         </div>
 
         {/* Day Detail */}
-        <div className="bg-card rounded-[2rem] border border-border/50 shadow-xl shadow-black/5 p-8">
+        <div className="bg-card rounded-[2rem] border border-border/50 shadow-xl shadow-black/5 p-4 sm:p-8">
           <h3 className="text-xl font-display font-bold mb-1">
             {selectedDate
               ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR })

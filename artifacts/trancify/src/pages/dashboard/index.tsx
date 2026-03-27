@@ -30,13 +30,13 @@ export default function DashboardHome() {
 
   return (
     <DashboardLayout>
-      <div className="mb-10">
-        <h1 className="text-4xl font-display font-bold text-foreground">Olá, {tenant?.name || 'Trancista'}! ✨</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Aqui está o resumo do seu salão hoje.</p>
+      <div className="mb-6 sm:mb-10">
+        <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground">Olá, {tenant?.name || 'Trancista'}! ✨</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-base sm:text-lg">Aqui está o resumo do seu salão hoje.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
         <StatCard 
           title="Agendamentos Hoje" 
           value={isLoadingApps ? "..." : upcomingAppointments.length.toString()} 
@@ -68,13 +68,13 @@ export default function DashboardHome() {
       </div>
 
       {/* Today's Schedule */}
-      <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-xl shadow-black/5">
-        <div className="flex justify-between items-center mb-8">
+      <div className="bg-card border border-border/50 rounded-3xl p-5 sm:p-8 shadow-xl shadow-black/5">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6 sm:mb-8">
           <div>
-            <h2 className="text-2xl font-display font-bold text-foreground">Agenda de Hoje</h2>
-            <p className="text-muted-foreground">{format(new Date(), "dd 'de' MMMM", { locale: ptBR })}</p>
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">Agenda de Hoje</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">{format(new Date(), "dd 'de' MMMM", { locale: ptBR })}</p>
           </div>
-          <Link href="/dashboard/agenda" className="text-primary font-semibold hover:underline">
+          <Link href="/dashboard/agenda" className="text-primary font-semibold hover:underline text-sm">
             Ver calendário completo
           </Link>
         </div>
@@ -117,17 +117,17 @@ export default function DashboardHome() {
 
 function StatCard({ title, value, icon: Icon, trend, color }: any) {
   return (
-    <div className="bg-card p-6 rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group">
+    <div className="bg-card p-4 sm:p-6 rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group">
       <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-20 transition-transform group-hover:scale-150 ${color}`} />
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <h3 className="text-muted-foreground font-medium">{title}</h3>
-        <div className={`p-3 rounded-xl ${color}`}>
-          <Icon className="w-5 h-5" />
+      <div className="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+        <h3 className="text-muted-foreground font-medium text-xs sm:text-sm leading-tight pr-1">{title}</h3>
+        <div className={`p-2 sm:p-3 rounded-xl shrink-0 ${color}`}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </div>
       <div className="relative z-10">
-        <span className="text-3xl font-bold text-foreground font-display tracking-tight">{value}</span>
-        <p className="text-sm text-muted-foreground mt-2">{trend}</p>
+        <span className="text-xl sm:text-3xl font-bold text-foreground font-display tracking-tight">{value}</span>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{trend}</p>
       </div>
     </div>
   );
