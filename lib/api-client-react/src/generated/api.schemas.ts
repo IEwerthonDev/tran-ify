@@ -103,6 +103,12 @@ export interface PublicTenant {
 
 export interface UpdateTenantRequest {
   name?: string;
+  /**
+   * @minLength 3
+   * @maxLength 50
+   * @pattern ^[a-z0-9]+(?:-[a-z0-9]+)*$
+   */
+  slug?: string;
   whatsapp?: string;
   logoUrl?: string;
   primaryColor?: string;

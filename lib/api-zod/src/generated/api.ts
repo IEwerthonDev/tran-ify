@@ -83,8 +83,21 @@ export const GetMyTenantResponse = zod.object({
 /**
  * @summary Update current tenant profile
  */
+export const updateMyTenantBodySlugMin = 3;
+export const updateMyTenantBodySlugMax = 50;
+
+export const updateMyTenantBodySlugRegExp = new RegExp(
+  "^[a-z0-9]+(?:-[a-z0-9]+)\*$",
+);
+
 export const UpdateMyTenantBody = zod.object({
   name: zod.string().optional(),
+  slug: zod
+    .string()
+    .min(updateMyTenantBodySlugMin)
+    .max(updateMyTenantBodySlugMax)
+    .regex(updateMyTenantBodySlugRegExp)
+    .optional(),
   whatsapp: zod.string().optional(),
   logoUrl: zod.string().optional(),
   primaryColor: zod.string().optional(),

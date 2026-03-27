@@ -5,8 +5,21 @@ import { useChangePassword } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Save, KeyRound, Store, ExternalLink, Palette, ChevronRight, Sparkles, Upload, Link, X, ImageIcon } from "lucide-react";
+import { Save, KeyRound, Store, ExternalLink, Palette, ChevronRight, Sparkles, Upload, Link, X, ImageIcon, Globe } from "lucide-react";
 import { useUpload } from "@workspace/object-storage-web";
+
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 const DEFAULT_PRIMARY = "#7D2535";
 const DEFAULT_SECONDARY = "#FAF7F5";
@@ -25,11 +38,13 @@ export default function ConfiguracoesPage() {
 
   const [profile, setProfile] = useState({
     name: "",
+    slug: "",
     whatsapp: "",
     logoUrl: "",
     primaryColor: DEFAULT_PRIMARY,
     secondaryColor: DEFAULT_SECONDARY,
   });
+  const [slugError, setSlugError] = useState("");
 
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -41,6 +56,7 @@ export default function ConfiguracoesPage() {
     if (tenant) {
       setProfile({
         name: tenant.name ?? "",
+        slug: tenant.slug ?? "",
         whatsapp: tenant.whatsapp ?? "",
         logoUrl: tenant.logoUrl ?? "",
         primaryColor: tenant.primaryColor ?? DEFAULT_PRIMARY,
@@ -49,11 +65,31 @@ export default function ConfiguracoesPage() {
     }
   }, [tenant]);
 
+  const handleSlugChange = (value: string) => {
+    const normalized = toSlug(value);
+    setProfile((p) => ({ ...p, slug: normalized }));
+    if (normalized.length > 0 && normalized.length < 3) {
+      setSlugError("Mínimo 3 caracteres");
+    } else if (normalized.length > 50) {
+      setSlugError("Máximo 50 caracteres");
+    } else if (normalized.length > 0 && !SLUG_REGEX.test(normalized)) {
+      setSlugError("Use apenas letras minúsculas, números e hífens");
+    } else {
+      setSlugError("");
+    }
+  };
+
   const handleSaveProfile = async () => {
+    if (slugError) return;
+    if (profile.slug && !SLUG_REGEX.test(profile.slug)) {
+      setSlugError("Link inválido");
+      return;
+    }
     try {
       await updateMutation.mutateAsync({
         data: {
           name: profile.name,
+          slug: profile.slug || undefined,
           whatsapp: profile.whatsapp || undefined,
           logoUrl: profile.logoUrl || undefined,
           primaryColor: profile.primaryColor,
@@ -61,8 +97,14 @@ export default function ConfiguracoesPage() {
         } as any,
       });
       toast({ title: "Perfil atualizado com sucesso!" });
-    } catch {
-      toast({ title: "Erro ao salvar perfil", variant: "destructive" });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? "";
+      if (msg.includes("link") || msg.includes("slug") || err?.response?.status === 409) {
+        setSlugError("Este link já está em uso. Escolha outro.");
+        toast({ title: "Link já em uso", description: "Escolha outro endereço.", variant: "destructive" });
+      } else {
+        toast({ title: "Erro ao salvar perfil", variant: "destructive" });
+      }
     }
   };
 
@@ -127,6 +169,47 @@ export default function ConfiguracoesPage() {
                     placeholder="Ex: Salão da Naíra"
                     className="h-12 text-base"
                   />
+                </Field>
+              </div>
+
+              <div className="md:col-span-2">
+                <Field label="Link Público da Página">
+                  <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring/30 focus-within:border-primary/60 transition-all">
+                    <div className="flex items-center px-3 bg-muted border-r border-input shrink-0">
+                      <Globe className="w-4 h-4 text-muted-foreground mr-1.5" />
+                      <span className="text-sm text-muted-foreground font-mono select-none">sualoja.com/</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={profile.slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      placeholder="meu-salao"
+                      spellCheck={false}
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      className="flex-1 h-12 px-3 bg-background text-base font-mono text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                    {profile.slug && !slugError && (
+                      <a
+                        href={`/${profile.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-3 text-primary hover:bg-primary/5 transition-colors"
+                        title="Abrir página"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                  {slugError ? (
+                    <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
+                      <X className="w-3 h-3" /> {slugError}
+                    </p>
+                  ) : profile.slug ? (
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      Sua página ficará em <span className="font-semibold text-foreground">/{profile.slug}</span>
+                    </p>
+                  ) : null}
                 </Field>
               </div>
 

@@ -6,8 +6,11 @@ import { z } from "zod";
 
 const router = Router();
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 const updateTenantSchema = z.object({
   name: z.string().min(1).optional(),
+  slug: z.string().min(3).max(50).regex(SLUG_REGEX, "Slug inválido: use apenas letras minúsculas, números e hífens").optional(),
   whatsapp: z.string().optional(),
   logoUrl: z.string().optional(),
   primaryColor: z.string().optional(),
@@ -66,7 +69,11 @@ router.patch("/me", requireTenant, async (req: AuthRequest, res) => {
     }
 
     res.json(formatTenant(updated));
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === "23505" && err?.constraint?.includes("slug")) {
+      res.status(409).json({ error: "SlugConflict", message: "Este link já está em uso. Escolha outro." });
+      return;
+    }
     req.log.error({ err }, "Update tenant error");
     res.status(500).json({ error: "InternalError", message: "Erro interno" });
   }
