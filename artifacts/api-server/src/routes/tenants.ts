@@ -11,6 +11,7 @@ const updateTenantSchema = z.object({
   whatsapp: z.string().optional(),
   logoUrl: z.string().optional(),
   primaryColor: z.string().optional(),
+  secondaryColor: z.string().optional(),
 });
 
 function formatTenant(tenant: typeof tenantsTable.$inferSelect) {
@@ -22,6 +23,7 @@ function formatTenant(tenant: typeof tenantsTable.$inferSelect) {
     whatsapp: tenant.whatsapp ?? null,
     logoUrl: tenant.logoUrl ?? null,
     primaryColor: tenant.primaryColor ?? null,
+    secondaryColor: tenant.secondaryColor ?? null,
     status: tenant.status,
     plan: tenant.plan,
     createdAt: tenant.createdAt.toISOString(),
@@ -86,6 +88,7 @@ router.get("/public/:slug", async (req, res) => {
       whatsapp: tenant.whatsapp ?? null,
       logoUrl: tenant.logoUrl ?? null,
       primaryColor: tenant.primaryColor ?? null,
+      secondaryColor: tenant.secondaryColor ?? null,
     });
   } catch (err) {
     req.log.error({ err }, "Get public tenant error");

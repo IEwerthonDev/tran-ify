@@ -28,6 +28,12 @@ const MAX_FILE_SIZE_MB = 5;
 const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const TOTAL_STEPS = 4;
 
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return `rgba(125,37,53,${alpha})`;
+  return `rgba(${parseInt(result[1]!, 16)},${parseInt(result[2]!, 16)},${parseInt(result[3]!, 16)},${alpha})`;
+}
+
 function toDateStr(d: Date): string {
   return format(d, "yyyy-MM-dd");
 }
@@ -101,6 +107,14 @@ export default function PublicBookingPage() {
   if (tenantErr || !tenant) return (
     <div className="min-h-screen flex items-center justify-center text-xl">Salão não encontrado.</div>
   );
+
+  const primaryColor = tenant.primaryColor || '#7D2535';
+  const secondaryColor = tenant.secondaryColor || '#FAF7F5';
+  const themeVars = {
+    '--color-primary': primaryColor,
+    '--color-ring': primaryColor,
+    '--color-background': secondaryColor,
+  } as React.CSSProperties;
 
   const handlePhotoAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -194,7 +208,7 @@ export default function PublicBookingPage() {
   if (isSuccess) {
     const wppText = encodeURIComponent(`Olá ${tenant.name}! Acabei de agendar uma trança pelo sistema. Meu nome é ${clientData.name}.`);
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center" style={themeVars}>
         <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-2xl shadow-emerald-500/20">
           <CheckCircle className="w-12 h-12" />
         </div>
@@ -223,7 +237,7 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={themeVars}>
       {/* Header */}
       <div className="bg-card border-b border-border/50 sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 h-20 flex items-center gap-4">
@@ -268,8 +282,8 @@ export default function PublicBookingPage() {
 
                 {/* Payment card */}
                 <div className="bg-card border border-border/60 rounded-3xl p-6 flex gap-5 shadow-sm">
-                  <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(125,37,53,0.1)" }}>
-                    <Banknote className="w-6 h-6" style={{ color: "#7D2535" }} />
+                  <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: hexToRgba(primaryColor, 0.1) }}>
+                    <Banknote className="w-6 h-6" style={{ color: primaryColor }} />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-foreground mb-1">Como funciona o pagamento?</h3>
@@ -287,8 +301,8 @@ export default function PublicBookingPage() {
 
                 {/* Photos card */}
                 <div className="bg-card border border-border/60 rounded-3xl p-6 flex gap-5 shadow-sm">
-                  <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(125,37,53,0.1)" }}>
-                    <Camera className="w-6 h-6" style={{ color: "#7D2535" }} />
+                  <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: hexToRgba(primaryColor, 0.1) }}>
+                    <Camera className="w-6 h-6" style={{ color: primaryColor }} />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-foreground mb-1">Fotos de referência — muito importante!</h3>
@@ -301,7 +315,7 @@ export default function PublicBookingPage() {
                         <p className="text-sm text-foreground"><strong>Mínimo 1 foto</strong> — qualquer referência já ajuda muito.</p>
                       </div>
                       <div className="flex items-start gap-2.5">
-                        <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5" style={{ color: "#7D2535" }}>3</div>
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5" style={{ background: hexToRgba(primaryColor, 0.15), color: primaryColor }}>3</div>
                         <p className="text-sm text-foreground"><strong>Ideal: 3 fotos</strong> — quanto mais referências, melhor o alinhamento de expectativas.</p>
                       </div>
                       <div className="flex items-start gap-2.5">
@@ -462,9 +476,9 @@ export default function PublicBookingPage() {
                         `}
                         style={
                           isSelected
-                            ? { background: "#7D2535" }
+                            ? { background: primaryColor }
                             : isAvailable && !isSelected
-                              ? { background: "rgba(125,37,53,0.08)" }
+                              ? { background: hexToRgba(primaryColor, 0.08) }
                               : undefined
                         }
                       >
@@ -479,11 +493,11 @@ export default function PublicBookingPage() {
 
                 <div className="px-6 pb-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground border-t border-border/40 pt-3">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: "#7D2535" }} />
+                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: primaryColor }} />
                     Selecionado
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: "rgba(125,37,53,0.08)", border: "1px solid rgba(125,37,53,0.2)" }} />
+                    <span className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: hexToRgba(primaryColor, 0.08), border: `1px solid ${hexToRgba(primaryColor, 0.2)}` }} />
                     Disponível
                   </span>
                   <span className="flex items-center gap-1.5">
@@ -516,7 +530,7 @@ export default function PublicBookingPage() {
                           key={slot}
                           onClick={() => setSelectedTime(slot)}
                           className={`h-12 rounded-xl font-bold transition-all border-2 ${selectedTime === slot ? 'text-primary-foreground shadow-lg scale-105' : 'bg-card border-border hover:border-primary/50'}`}
-                          style={selectedTime === slot ? { background: "#7D2535", borderColor: "#7D2535" } : undefined}
+                          style={selectedTime === slot ? { background: primaryColor, borderColor: primaryColor } : undefined}
                         >
                           {slot}
                         </button>

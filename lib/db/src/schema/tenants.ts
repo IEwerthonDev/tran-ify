@@ -14,6 +14,7 @@ export const tenantsTable = pgTable("tenants", {
   whatsapp: text("whatsapp"),
   logoUrl: text("logo_url"),
   primaryColor: text("primary_color"),
+  secondaryColor: text("secondary_color"),
   status: tenantStatusEnum("status").notNull().default("active"),
   plan: tenantPlanEnum("plan").notNull().default("basic"),
   planPrice: text("plan_price").notNull().default("0"),
