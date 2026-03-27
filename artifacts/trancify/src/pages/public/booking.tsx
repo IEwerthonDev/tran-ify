@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "wouter";
 import { useGetPublicTenant, useGetPublicServices, useGetPublicAvailability, useGetPublicAvailabilityDates, useBookAppointment } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,18 @@ function fileToBase64(file: File): Promise<string> {
 export default function PublicBookingPage() {
   const { slug } = useParams();
   const { toast } = useToast();
+
+  // Strip dark mode from <html> while the public page is visible so no
+  // Tailwind dark: classes interfere with the tenant's chosen brand colors.
+  useEffect(() => {
+    const html = document.documentElement;
+    const hadDark = html.classList.contains("dark");
+    html.classList.remove("dark");
+    return () => {
+      if (hadDark) html.classList.add("dark");
+    };
+  }, []);
+
   const { data: tenant, isLoading: loadTenant, error: tenantErr } = useGetPublicTenant(slug || "");
   const { data: services } = useGetPublicServices(tenant?.id || "", { query: { enabled: !!tenant?.id } });
 
