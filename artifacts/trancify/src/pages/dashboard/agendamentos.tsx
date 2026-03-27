@@ -7,8 +7,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Trash2 } from "lucide-react";
+import { Calendar, Trash2, Eye, User, Phone, CreditCard, Ruler, Image, MessageSquare, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AgendamentosPage() {
@@ -26,14 +25,14 @@ export default function AgendamentosPage() {
 
       <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
         {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map(status => (
-          <button 
+          <button
             key={status}
             onClick={() => setFilterStatus(status)}
             className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${filterStatus === status ? 'bg-foreground text-background shadow-md' : 'bg-card border border-border text-muted-foreground hover:border-foreground/30'}`}
           >
-            {status === 'all' ? 'Todos' : 
-             status === 'pending' ? 'Pendentes' : 
-             status === 'confirmed' ? 'Confirmados' : 
+            {status === 'all' ? 'Todos' :
+             status === 'pending' ? 'Pendentes' :
+             status === 'confirmed' ? 'Confirmados' :
              status === 'completed' ? 'Concluídos' : 'Cancelados'}
           </button>
         ))}
@@ -82,7 +81,10 @@ export default function AgendamentosPage() {
                       <StatusBadge status={app.status} />
                     </td>
                     <td className="p-4 pr-6 text-right">
-                      <ActionMenu appointment={app} onUpdate={refetch} />
+                      <div className="flex justify-end items-center gap-2">
+                        <DetailModal appointment={app} />
+                        <ActionMenu appointment={app} onUpdate={refetch} />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -97,6 +99,158 @@ export default function AgendamentosPage() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+function DetailModal({ appointment }: { appointment: any }) {
+  const [open, setOpen] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+
+  const photos: string[] = appointment.referencePhotos ?? [];
+  const paymentLabel: Record<string, string> = { pix: "Pix", card: "Cartão", cash: "Dinheiro" };
+  const braidLabel: Record<string, string> = { mid_back: "Até o meio das costas", waist_butt: "Até a cintura / Bumbum" };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button size="sm" variant="outline" className="h-9 rounded-lg gap-1.5 text-muted-foreground hover:text-foreground">
+            <Eye className="w-4 h-4" />
+            <span className="hidden sm:inline">Ver</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-display font-bold">Detalhes do Agendamento</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5 mt-2">
+            {/* Date / Time / Status */}
+            <div className="flex items-center justify-between bg-secondary/50 rounded-2xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary p-2.5 rounded-xl">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-lg">
+                    {format(parseISO(appointment.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  </p>
+                  <p className="text-muted-foreground text-sm">às {appointment.time}</p>
+                </div>
+              </div>
+              <StatusBadge status={appointment.status} />
+            </div>
+
+            {/* Client Info */}
+            <div className="bg-card rounded-2xl border border-border/50 p-4 space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Dados da Cliente</h3>
+              <div className="flex items-center gap-3">
+                <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="font-semibold text-foreground">{appointment.clientName}</p>
+                  {appointment.clientAge && <p className="text-sm text-muted-foreground">{appointment.clientAge} anos</p>}
+                </div>
+              </div>
+              {appointment.clientPhone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <a href={`https://wa.me/${appointment.clientPhone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer"
+                     className="text-primary font-semibold hover:underline">
+                    {appointment.clientPhone}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Service Info */}
+            <div className="bg-card rounded-2xl border border-border/50 p-4 space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Serviço</h3>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-bold text-foreground">{appointment.serviceName}</p>
+                  <p className="text-sm text-muted-foreground">{braidLabel[appointment.braidSize] ?? appointment.braidSize}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-primary">{formatCurrency(appointment.servicePrice)}</p>
+                  {appointment.materialCost != null && (
+                    <p className="text-xs text-muted-foreground">
+                      Material: {formatCurrency(appointment.materialCost)} · Lucro: {formatCurrency(appointment.servicePrice - appointment.materialCost)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                <CreditCard className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-sm text-muted-foreground">Pagamento: <strong className="text-foreground">{paymentLabel[appointment.paymentMethod] ?? appointment.paymentMethod}</strong></span>
+              </div>
+            </div>
+
+            {/* Hair Description */}
+            {appointment.hairDescription && (
+              <div className="bg-card rounded-2xl border border-border/50 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Descrição do Cabelo</h3>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">{appointment.hairDescription}</p>
+              </div>
+            )}
+
+            {/* Reference Photos */}
+            <div className="bg-card rounded-2xl border border-border/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Image className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Fotos de Referência</h3>
+              </div>
+              {photos.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">Nenhuma foto de referência enviada.</p>
+              ) : (
+                <div className="flex gap-3 flex-wrap">
+                  {photos.map((src, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setLightbox(src)}
+                      className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-border hover:border-primary/50 transition-all shadow-sm hover:shadow-md group"
+                    >
+                      <img src={src} alt={`Referência ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Notes */}
+            {appointment.notes && (
+              <div className="bg-secondary/40 rounded-2xl p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Observações</p>
+                <p className="text-sm text-foreground">{appointment.notes}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors"
+            onClick={() => setLightbox(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={lightbox}
+            alt="Foto ampliada"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -171,7 +325,7 @@ function ActionMenu({ appointment, onUpdate }: { appointment: any, onUpdate: () 
       {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
         <Button size="sm" variant="ghost" className="h-9 text-destructive hover:bg-destructive/10" onClick={() => handleStatus('cancelled')}>Cancelar</Button>
       )}
-      
+
       {appointment.status === 'completed' && (
         <Dialog open={isCostOpen} onOpenChange={setIsCostOpen}>
           <DialogTrigger asChild>
