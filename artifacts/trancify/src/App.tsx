@@ -21,6 +21,7 @@ import AssinaturaPage from "@/pages/dashboard/assinatura";
 import AdminOverview from "@/pages/admin/index";
 import AdminTenants from "@/pages/admin/tenants";
 import AdminContaPage from "@/pages/admin/conta";
+import CadastroPage from "@/pages/cadastro";
 import PublicBookingPage from "@/pages/public/booking";
 
 const queryClient = new QueryClient();
@@ -109,6 +110,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/cadastro" component={CadastroPage} />
 
       {/* Tenant Routes — all guarded by trial check */}
       <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardHome} allowedRole="tenant" checkTrial />} />

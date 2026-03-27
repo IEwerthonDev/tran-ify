@@ -254,9 +254,18 @@ function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
 function EditTenantDialog({ tenant, onUpdated }: { tenant: any; onUpdated: () => void }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    name: tenant.name,
-    status: tenant.status as "active" | "blocked",
+    name: tenant.name ?? "",
+    ownerName: tenant.ownerName ?? "",
+    status: (tenant.status ?? "active") as "active" | "blocked",
     subscriptionStatus: (tenant.subscriptionStatus ?? "trial") as "trial" | "active" | "cancelled" | "expired",
+    subscriptionPlan: (tenant.subscriptionPlan ?? "monthly") as "monthly" | "annual",
+    whatsapp: tenant.whatsapp ?? "",
+    birthDate: tenant.birthDate ?? "",
+    cpf: tenant.cpf ?? "",
+    address: tenant.address ?? "",
+    cep: tenant.cep ?? "",
+    city: tenant.city ?? "",
+    state: tenant.state ?? "",
   });
   const updateMutation = useAdminUpdateTenant();
   const { toast } = useToast();
@@ -279,36 +288,107 @@ function EditTenantDialog({ tenant, onUpdated }: { tenant: any; onUpdated: () =>
           <Pencil className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Editar — {tenant.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
-          <Field label="Nome">
+
+          {/* Account info */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dados da conta</p>
+          <Field label="Nome do salão">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
-          <Field label="Status da conta">
+          <Field label="Nome da proprietária">
+            <Input value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} />
+          </Field>
+          <Field label="WhatsApp">
+            <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="5511999887766" />
+          </Field>
+
+          {/* Status */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">Assinatura</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Status da conta">
+              <select
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as any })}
+                className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+              >
+                <option value="active">Ativa</option>
+                <option value="blocked">Bloqueada</option>
+              </select>
+            </Field>
+            <Field label="Status da assinatura">
+              <select
+                value={form.subscriptionStatus}
+                onChange={(e) => setForm({ ...form, subscriptionStatus: e.target.value as any })}
+                className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+              >
+                <option value="trial">Período de teste</option>
+                <option value="active">Ativa</option>
+                <option value="cancelled">Cancelada</option>
+                <option value="expired">Expirada</option>
+              </select>
+            </Field>
+          </div>
+          <Field label="Plano">
             <select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value as any })}
+              value={form.subscriptionPlan}
+              onChange={(e) => setForm({ ...form, subscriptionPlan: e.target.value as any })}
               className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
             >
-              <option value="active">Ativa</option>
-              <option value="blocked">Bloqueada</option>
+              <option value="monthly">Mensal (R$ 50/mês)</option>
+              <option value="annual">Anual (R$ 480/ano)</option>
             </select>
           </Field>
-          <Field label="Status da assinatura">
-            <select
-              value={form.subscriptionStatus}
-              onChange={(e) => setForm({ ...form, subscriptionStatus: e.target.value as any })}
-              className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-            >
-              <option value="trial">Período de teste</option>
-              <option value="active">Ativa</option>
-              <option value="cancelled">Cancelada</option>
-              <option value="expired">Expirada</option>
-            </select>
+
+          {/* Personal info */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">Dados pessoais</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Data de nascimento">
+              <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
+            </Field>
+            <Field label="CPF">
+              <Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+            </Field>
+          </div>
+
+          {/* Address */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">Endereço</p>
+          <Field label="CEP">
+            <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: e.target.value })} placeholder="00000-000" />
           </Field>
+          <Field label="Logradouro e bairro">
+            <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Cidade">
+              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+            </Field>
+            <Field label="Estado (UF)">
+              <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase().slice(0, 2) })} placeholder="SP" maxLength={2} />
+            </Field>
+          </div>
+
+          {/* Card metadata (read-only) */}
+          {tenant.cardLast4 && (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">Cartão cadastrado</p>
+              <div className="bg-secondary/50 rounded-xl px-4 py-3 text-sm text-foreground">
+                {tenant.cardBrand && <span className="font-medium">{tenant.cardBrand} </span>}
+                •••• •••• •••• {tenant.cardLast4}
+                {tenant.cardExpiryMonth && tenant.cardExpiryYear && (
+                  <span className="text-muted-foreground ml-2">validade {tenant.cardExpiryMonth}/{String(tenant.cardExpiryYear).slice(-2)}</span>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* IP */}
+          {tenant.registrationIp && (
+            <p className="text-xs text-muted-foreground">IP de cadastro: <span className="font-mono">{tenant.registrationIp}</span></p>
+          )}
         </div>
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

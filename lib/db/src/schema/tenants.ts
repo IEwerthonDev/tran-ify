@@ -12,11 +12,28 @@ export const tenantsTable = pgTable("tenants", {
   userId: text("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
+
+  // Owner personal info
+  ownerName: text("owner_name"),
+  birthDate: text("birth_date"),
+  cpf: text("cpf"),
+
+  // Salon address
+  address: text("address"),
+  cep: text("cep"),
+  state: text("state"),
+  city: text("city"),
+
+  // Salon settings
   whatsapp: text("whatsapp"),
   logoUrl: text("logo_url"),
   primaryColor: text("primary_color"),
   secondaryColor: text("secondary_color"),
+
+  // Account status
   status: tenantStatusEnum("status").notNull().default("active"),
+
+  // Subscription
   subscriptionStatus: subscriptionStatusEnum("subscription_status").notNull().default("trial"),
   subscriptionPlan: subscriptionPlanEnum("subscription_plan"),
   trialEndsAt: timestamp("trial_ends_at").notNull().$defaultFn(() => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
@@ -24,6 +41,16 @@ export const tenantsTable = pgTable("tenants", {
   subscriptionEndsAt: timestamp("subscription_ends_at"),
   blockAt: timestamp("block_at"),
   lastActiveAt: timestamp("last_active_at"),
+
+  // Payment card metadata (display only — never store raw card data)
+  cardLast4: text("card_last4"),
+  cardBrand: text("card_brand"),
+  cardExpiryMonth: text("card_expiry_month"),
+  cardExpiryYear: text("card_expiry_year"),
+
+  // Anti-abuse
+  registrationIp: text("registration_ip"),
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

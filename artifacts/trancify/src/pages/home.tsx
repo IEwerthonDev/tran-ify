@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { motion, useInView } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
@@ -438,12 +438,12 @@ export default function HomePage() {
                   ))}
                 </ul>
 
-                <button
-                  onClick={() => document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" })}
-                  className="w-full py-4 bg-primary text-white rounded-2xl font-semibold text-base hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
+                <Link
+                  href="/cadastro"
+                  className="block w-full py-4 bg-primary text-white rounded-2xl font-semibold text-base hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 text-center"
                 >
                   Começar minha semana grátis
-                </button>
+                </Link>
 
                 <p className="text-center text-xs text-muted-foreground mt-4">
                   Após 7 dias, R$ 50/mês. Cancele a qualquer momento.

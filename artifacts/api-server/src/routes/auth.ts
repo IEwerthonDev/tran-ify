@@ -27,11 +27,49 @@ const sensitiveOpLimiter = rateLimit({
   message: { error: "TooManyRequests", message: "Muitas tentativas. Tente novamente em 15 minutos." },
 });
 
+// 3 registrations per IP per 24h to prevent free trial abuse
+const registerLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: process.env.NODE_ENV === "development" ? 50 : 3,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? "unknown",
+  message: {
+    error: "TooManyRequests",
+    message: "Limite de cadastros por IP atingido. Por segurança, permitimos no máximo 3 cadastros por endereço de rede a cada 24 horas. Tente novamente amanhã ou entre em contato: contato@trancify.com.br",
+  },
+});
+
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+const registerSchema = z.object({
+  // Personal
+  ownerName: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(8, "Senha deve ter ao menos 8 caracteres"),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
+  cpf: z.string().min(11).max(14),
+  // Salon
+  salonName: z.string().min(2, "Nome do salão deve ter ao menos 2 caracteres"),
+  slug: z.string().min(2).regex(/^[a-z0-9-]+$/, "URL deve conter apenas letras minúsculas, números e hífens"),
+  whatsapp: z.string().min(10, "WhatsApp inválido"),
+  // Address
+  cep: z.string().min(8),
+  address: z.string().min(5),
+  city: z.string().min(2),
+  state: z.string().length(2),
+  // Plan
+  plan: z.enum(["monthly", "annual"]),
+  // Card metadata (display only — raw data never touches our server)
+  cardLast4: z.string().length(4),
+  cardBrand: z.string().min(1),
+  cardExpiryMonth: z.string().regex(/^\d{2}$/),
+  cardExpiryYear: z.string().regex(/^\d{4}$/),
 });
 
 const changePasswordSchema = z.object({
@@ -45,6 +83,88 @@ const changeEmailSchema = z.object({
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
+
+router.post("/register", registerLimiter, async (req, res) => {
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "ValidationError",
+      message: parsed.error.issues.map((i) => i.message).join("; "),
+    });
+    return;
+  }
+
+  const d = parsed.data;
+  const ip = req.ip ?? "unknown";
+
+  try {
+    // Check email uniqueness
+    const [existingUser] = await db.select().from(usersTable).where(eq(usersTable.email, d.email.toLowerCase())).limit(1);
+    if (existingUser) {
+      res.status(409).json({ error: "Conflict", message: "Este email já está cadastrado." });
+      return;
+    }
+
+    // Check slug uniqueness
+    const [existingSlug] = await db.select().from(tenantsTable).where(eq(tenantsTable.slug, d.slug)).limit(1);
+    if (existingSlug) {
+      res.status(409).json({ error: "Conflict", message: "Esta URL de salão já está em uso. Escolha outra." });
+      return;
+    }
+
+    const passwordHash = await hashPassword(d.password);
+
+    const [user] = await db.insert(usersTable).values({
+      email: d.email.toLowerCase(),
+      passwordHash,
+      role: "tenant",
+    }).returning();
+
+    const [tenant] = await db.insert(tenantsTable).values({
+      userId: user!.id,
+      name: d.salonName,
+      slug: d.slug,
+      whatsapp: d.whatsapp,
+      ownerName: d.ownerName,
+      birthDate: d.birthDate,
+      cpf: d.cpf,
+      address: d.address,
+      cep: d.cep,
+      city: d.city,
+      state: d.state,
+      subscriptionPlan: d.plan,
+      cardLast4: d.cardLast4,
+      cardBrand: d.cardBrand,
+      cardExpiryMonth: d.cardExpiryMonth,
+      cardExpiryYear: d.cardExpiryYear,
+      registrationIp: ip,
+    }).returning();
+
+    const token = signToken({
+      userId: user!.id,
+      email: user!.email,
+      role: "tenant",
+      tenantId: tenant!.id,
+      tenantSlug: tenant!.slug,
+    });
+
+    logger.info({ userId: user!.id, slug: tenant!.slug, ip }, "New tenant registered");
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user!.id,
+        email: user!.email,
+        role: user!.role,
+        tenantId: tenant!.id,
+        tenantSlug: tenant!.slug,
+      },
+    });
+  } catch (err) {
+    req.log.error({ err }, "Register error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno. Tente novamente." });
+  }
+});
 
 router.post("/login", loginLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);

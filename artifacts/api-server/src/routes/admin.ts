@@ -16,10 +16,19 @@ const createTenantSchema = z.object({
 
 const updateTenantSchema = z.object({
   name: z.string().optional(),
+  ownerName: z.string().optional(),
   email: z.string().email().optional(),
   status: z.enum(["active", "blocked"]).optional(),
   subscriptionStatus: z.enum(["trial", "active", "cancelled", "expired"]).optional(),
+  subscriptionPlan: z.enum(["monthly", "annual"]).optional(),
   blockAt: z.string().optional(),
+  birthDate: z.string().optional(),
+  cpf: z.string().optional(),
+  address: z.string().optional(),
+  cep: z.string().optional(),
+  state: z.string().optional(),
+  city: z.string().optional(),
+  whatsapp: z.string().optional(),
 });
 
 const resetPasswordSchema = z.object({
@@ -47,6 +56,7 @@ async function formatAdminTenant(tenant: typeof tenantsTable.$inferSelect) {
     id: tenant.id,
     slug: tenant.slug,
     name: tenant.name,
+    ownerName: tenant.ownerName ?? null,
     email: user[0]?.email ?? "",
     status: tenant.status,
     subscriptionStatus: tenant.subscriptionStatus,
@@ -59,6 +69,20 @@ async function formatAdminTenant(tenant: typeof tenantsTable.$inferSelect) {
     createdAt: tenant.createdAt.toISOString(),
     lastActiveAt: tenant.lastActiveAt?.toISOString() ?? null,
     blockAt: tenant.blockAt?.toISOString() ?? null,
+    // Personal & address info
+    birthDate: tenant.birthDate ?? null,
+    cpf: tenant.cpf ?? null,
+    address: tenant.address ?? null,
+    cep: tenant.cep ?? null,
+    state: tenant.state ?? null,
+    city: tenant.city ?? null,
+    whatsapp: tenant.whatsapp ?? null,
+    // Card metadata
+    cardLast4: tenant.cardLast4 ?? null,
+    cardBrand: tenant.cardBrand ?? null,
+    cardExpiryMonth: tenant.cardExpiryMonth ?? null,
+    cardExpiryYear: tenant.cardExpiryYear ?? null,
+    registrationIp: tenant.registrationIp ?? null,
   };
 }
 
@@ -126,10 +150,19 @@ router.patch("/tenants/:id", requireSuperAdmin, async (req: AuthRequest, res) =>
     }
 
     const updateData: Partial<typeof tenantsTable.$inferInsert> = {};
-    if (parsed.data.name) updateData.name = parsed.data.name;
-    if (parsed.data.status) updateData.status = parsed.data.status;
-    if (parsed.data.subscriptionStatus) updateData.subscriptionStatus = parsed.data.subscriptionStatus;
+    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+    if (parsed.data.ownerName !== undefined) updateData.ownerName = parsed.data.ownerName;
+    if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
+    if (parsed.data.subscriptionStatus !== undefined) updateData.subscriptionStatus = parsed.data.subscriptionStatus;
+    if (parsed.data.subscriptionPlan !== undefined) updateData.subscriptionPlan = parsed.data.subscriptionPlan;
     if (parsed.data.blockAt) updateData.blockAt = new Date(parsed.data.blockAt);
+    if (parsed.data.birthDate !== undefined) updateData.birthDate = parsed.data.birthDate;
+    if (parsed.data.cpf !== undefined) updateData.cpf = parsed.data.cpf;
+    if (parsed.data.address !== undefined) updateData.address = parsed.data.address;
+    if (parsed.data.cep !== undefined) updateData.cep = parsed.data.cep;
+    if (parsed.data.state !== undefined) updateData.state = parsed.data.state;
+    if (parsed.data.city !== undefined) updateData.city = parsed.data.city;
+    if (parsed.data.whatsapp !== undefined) updateData.whatsapp = parsed.data.whatsapp;
 
     const [updated] = await db
       .update(tenantsTable)
