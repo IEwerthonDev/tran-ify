@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -15,17 +15,29 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem("trancify_theme") as Theme | null;
-    if (stored === "dark" || stored === "light") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const resolved =
+      stored === "dark" || stored === "light"
+        ? stored
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    // Apply the class synchronously during initialisation so it is set
+    // before React runs any effects (including child effects in public pages).
+    document.documentElement.classList.toggle("dark", resolved === "dark");
+    return resolved;
   });
 
+  // Track whether this is the very first mount. On first mount the class was
+  // already applied synchronously above, so the effect must NOT re-add it —
+  // that would race with the public booking page's effect that strips .dark.
+  const isFirstMount = useRef(true);
+
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
     }
+    document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("trancify_theme", theme);
   }, [theme]);
 
