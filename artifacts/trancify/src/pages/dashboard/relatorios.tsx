@@ -69,7 +69,7 @@ export default function RelatoriosPage() {
           title="Agendamentos"
           value={isLoading ? "..." : String(report?.totalAppointments ?? 0)}
           icon={Calendar}
-          color="bg-blue-50 text-blue-600"
+          color="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
           trend="No período"
         />
         <StatCard
@@ -90,7 +90,7 @@ export default function RelatoriosPage() {
           title="Lucro Líquido"
           value={isLoading ? "..." : formatCurrency(report?.totalProfit ?? 0)}
           icon={TrendingUp}
-          color="bg-emerald-50 text-emerald-600"
+          color="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
           trend="Faturamento − Custos"
         />
       </div>
@@ -100,11 +100,11 @@ export default function RelatoriosPage() {
         <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-display font-bold mb-5 sm:mb-8">Receita vs. Lucro por Mês</h2>
           {chartData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
+            <div className="h-48 sm:h-64 flex items-center justify-center text-muted-foreground">
               Nenhum dado no período selecionado.
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
               <BarChart data={chartData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
@@ -173,7 +173,7 @@ export default function RelatoriosPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Margem de lucro</span>
-                <span className="font-bold text-emerald-600">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
                   {report.totalRevenue > 0
                     ? `${Math.round((report.totalProfit / report.totalRevenue) * 100)}%`
                     : "—"}

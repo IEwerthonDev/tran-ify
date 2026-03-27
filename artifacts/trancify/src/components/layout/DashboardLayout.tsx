@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,6 +17,8 @@ import {
   Menu,
   X,
   MoreHorizontal,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const isSuperAdmin = user?.role === "super_admin";
 
@@ -95,8 +99,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
         </div>
 
-        <div className="mt-auto p-6 border-t border-border/50">
-          <div className="flex items-center gap-3 mb-6 px-2">
+        <div className="mt-auto p-6 border-t border-border/50 space-y-3">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-sm font-medium"
+            aria-label="Alternar tema"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-4 h-4 shrink-0" />
+            ) : (
+              <Moon className="w-4 h-4 shrink-0" />
+            )}
+            {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+          </button>
+
+          <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary font-bold">
               {user?.email?.charAt(0).toUpperCase()}
             </div>
@@ -130,13 +148,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             Trancify
           </span>
         </div>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
-          aria-label="Abrir menu"
-        >
-          <Menu className="w-5 h-5 text-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
+            aria-label="Alternar tema"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-5 h-5 text-foreground" />
+            ) : (
+              <Moon className="w-5 h-5 text-foreground" />
+            )}
+          </button>
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
+            aria-label="Abrir menu"
+          >
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
+        </div>
       </header>
 
       {/* ── Mobile Side Drawer ── */}
@@ -206,8 +237,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </nav>
               </div>
 
-              {/* User + Logout */}
+              {/* Theme toggle + User + Logout */}
               <div className="p-4 border-t border-border/50 space-y-3">
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-sm font-medium"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="w-4 h-4 shrink-0" />
+                  ) : (
+                    <Moon className="w-4 h-4 shrink-0" />
+                  )}
+                  {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+                </button>
                 <div className="flex items-center gap-3 px-2 py-1">
                   <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">
                     {user?.email?.charAt(0).toUpperCase()}

@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Moon, Sun } from "lucide-react";
 
 export default function LoginPage() {
   const { login, isLoggingIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,15 @@ export default function LoginPage() {
         {/* Decorative blobs */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Theme toggle button */}
+        <button
+          onClick={toggleTheme}
+          className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-xl bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-sm"
+          aria-label="Alternar tema"
+        >
+          {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
 
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
@@ -88,7 +99,6 @@ export default function LoginPage() {
 
       {/* Right Image Side */}
       <div className="hidden lg:block lg:w-1/2 relative bg-primary">
-        {/* landing page hero scenic mountain landscape - using Unsplash as placeholder if generated image fails, but utilizing base path */}
         <img 
           src={`${import.meta.env.BASE_URL}images/login-hero.png`} 
           alt="Trancify Hero" 

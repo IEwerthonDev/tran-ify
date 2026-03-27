@@ -291,10 +291,10 @@ function DetailModal({ appointment }: { appointment: any }) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: any = {
-    pending: { label: "Pendente", classes: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-    confirmed: { label: "Confirmado", classes: "bg-blue-100 text-blue-800 border-blue-200" },
-    completed: { label: "Concluído", classes: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-    cancelled: { label: "Cancelado", classes: "bg-red-100 text-red-800 border-red-200" },
+    pending: { label: "Pendente", classes: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700" },
+    confirmed: { label: "Confirmado", classes: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-700" },
+    completed: { label: "Concluído", classes: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700" },
+    cancelled: { label: "Cancelado", classes: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-700" },
   };
   const config = map[status];
   return (
@@ -355,7 +355,7 @@ function ActionMenu({ appointment, onUpdate }: { appointment: any, onUpdate: () 
         <Button size="sm" className="h-8 rounded-lg text-xs px-3" onClick={() => handleStatus('confirmed')}>Confirmar</Button>
       )}
       {appointment.status === 'confirmed' && (
-        <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs px-3 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100" onClick={() => handleStatus('completed')}>Concluir</Button>
+        <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs px-3 bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50" onClick={() => handleStatus('completed')}>Concluir</Button>
       )}
       {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
         <Button size="sm" variant="ghost" className="h-8 text-xs px-2 text-destructive hover:bg-destructive/10" onClick={() => handleStatus('cancelled')}>Cancelar</Button>

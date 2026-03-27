@@ -31,14 +31,14 @@ export default function AdminOverview() {
           title="Total de Trancistas"
           value={statsLoading ? "..." : String(stats?.totalTenants ?? 0)}
           icon={Users}
-          color="bg-blue-50 text-blue-600"
+          color="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
           trend="Todas cadastradas"
         />
         <StatCard
           title="Ativas"
           value={statsLoading ? "..." : String(stats?.activeTenants ?? 0)}
           icon={CheckCircle}
-          color="bg-emerald-50 text-emerald-600"
+          color="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
           trend="Em operação"
         />
         <StatCard
@@ -52,7 +52,7 @@ export default function AdminOverview() {
           title="Receita Total"
           value={statsLoading ? "..." : formatCurrency(stats?.totalRevenue ?? 0)}
           icon={DollarSign}
-          color="bg-amber-50 text-amber-600"
+          color="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
           trend="Gerada pelas trancistas"
         />
       </div>
@@ -62,11 +62,11 @@ export default function AdminOverview() {
         <div className="xl:col-span-2 bg-card rounded-3xl border border-border/50 shadow-xl shadow-black/5 p-5 sm:p-8">
           <h2 className="text-xl sm:text-2xl font-display font-bold mb-5 sm:mb-8">Agendamentos por Mês</h2>
           {chartData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
+            <div className="h-48 sm:h-64 flex items-center justify-center text-muted-foreground">
               Nenhum dado disponível ainda.
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
               <BarChart data={chartData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
