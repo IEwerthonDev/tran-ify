@@ -1,18 +1,33 @@
-const CALLMEBOT_APIKEY = process.env.CALLMEBOT_APIKEY;
-const CALLMEBOT_PHONE = process.env.CALLMEBOT_PHONE;
+const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
+const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN;
 
 function isConfigured(): boolean {
-  return Boolean(CALLMEBOT_APIKEY && CALLMEBOT_PHONE);
+  return Boolean(ZAPI_INSTANCE_ID && ZAPI_TOKEN);
 }
 
-async function sendCallMeBot(phone: string, message: string): Promise<void> {
-  const encoded = encodeURIComponent(message);
+async function sendZApi(phone: string, message: string): Promise<void> {
   const clean = phone.replace(/\D/g, "");
-  const url = `https://api.callmebot.com/whatsapp.php?phone=${clean}&text=${encoded}&apikey=${CALLMEBOT_APIKEY}`;
-  const res = await fetch(url);
-  const body = await res.text();
-  if (!res.ok || body.toLowerCase().includes("error")) {
-    throw new Error(`CallMeBot error (${res.status}): ${body.slice(0, 200)}`);
+  const phoneWithCountry = clean.startsWith("55") ? clean : `55${clean}`;
+
+  const url = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/send-text`;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (ZAPI_CLIENT_TOKEN) {
+    headers["Client-Token"] = ZAPI_CLIENT_TOKEN;
+  }
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ phone: phoneWithCountry, message }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Z-API error (${res.status}): ${body.slice(0, 200)}`);
   }
 }
 
@@ -30,6 +45,7 @@ export interface BookingNotificationData {
   referencePhotos?: string[];
   notes?: string | null;
   tenantName: string;
+  tenantPhone?: string | null;
 }
 
 function braidSizeLabel(s: string): string {
@@ -52,7 +68,13 @@ function formatPrice(value: number): string {
 
 export async function sendBookingNotification(data: BookingNotificationData): Promise<void> {
   if (!isConfigured()) {
-    console.log("[WhatsApp] CALLMEBOT_PHONE ou CALLMEBOT_APIKEY não configurados — notificação ignorada.");
+    console.log("[WhatsApp] ZAPI_INSTANCE_ID ou ZAPI_TOKEN não configurados — notificação ignorada.");
+    return;
+  }
+
+  const targetPhone = data.tenantPhone || process.env.ZAPI_DEFAULT_PHONE;
+  if (!targetPhone) {
+    console.log("[WhatsApp] Nenhum número de destino configurado — notificação ignorada.");
     return;
   }
 
@@ -81,8 +103,8 @@ export async function sendBookingNotification(data: BookingNotificationData): Pr
 
   const photoCount = data.referencePhotos?.length ?? 0;
   if (photoCount > 0) {
-    lines.push(``, `🖼️ ${photoCount} foto(s) de referência foram enviadas pelo sistema.`);
+    lines.push(``, `🖼️ ${photoCount} foto(s) de referência enviadas pelo sistema.`);
   }
 
-  await sendCallMeBot(CALLMEBOT_PHONE!, lines.join("\n"));
+  await sendZApi(targetPhone, lines.join("\n"));
 }

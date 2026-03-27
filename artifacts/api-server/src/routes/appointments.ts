@@ -192,6 +192,7 @@ router.post("/book", async (req, res) => {
 
     sendBookingNotification({
       tenantName: tenant?.name ?? "Salão",
+      tenantPhone: tenant?.whatsapp ?? null,
       clientName: data.clientName,
       clientPhone: data.clientPhone ?? null,
       clientAge: data.clientAge ?? null,
