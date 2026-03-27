@@ -120,21 +120,41 @@ export default function PublicBookingPage() {
 
   const availableDatesSet = new Set<string>(availableDatesData?.availableDates ?? []);
 
+  const lightBase = { backgroundColor: 'hsl(40,33%,98%)', color: 'hsl(20,14%,16%)' } as React.CSSProperties;
+
   if (loadTenant) return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="animate-pulse w-16 h-16 bg-primary rounded-2xl" />
+    <div className="min-h-screen flex items-center justify-center" style={lightBase}>
+      <div className="animate-pulse w-16 h-16 rounded-2xl" style={{ backgroundColor: '#7D2535' }} />
     </div>
   );
   if (tenantErr || !tenant) return (
-    <div className="min-h-screen flex items-center justify-center text-xl">Salão não encontrado.</div>
+    <div className="min-h-screen flex items-center justify-center text-xl" style={lightBase}>Salão não encontrado.</div>
   );
 
   const primaryColor = tenant.primaryColor || '#7D2535';
   const secondaryColor = tenant.secondaryColor || '#FAF7F5';
-  const themeVars = {
-    '--primary': hexToHsl(primaryColor),
-    '--ring': hexToHsl(primaryColor),
+
+  // Force light-mode base palette + tenant's brand color, ignoring any dark mode state
+  const publicThemeVars = {
     '--background': hexToHsl(secondaryColor),
+    '--foreground': '20 14% 16%',
+    '--card': '0 0% 100%',
+    '--card-foreground': '20 14% 16%',
+    '--popover': '0 0% 100%',
+    '--popover-foreground': '20 14% 16%',
+    '--primary': hexToHsl(primaryColor),
+    '--primary-foreground': '0 0% 100%',
+    '--secondary': '35 30% 90%',
+    '--secondary-foreground': '345 60% 25%',
+    '--muted': '40 20% 92%',
+    '--muted-foreground': '25 10% 45%',
+    '--accent': '35 85% 55%',
+    '--accent-foreground': '20 14% 16%',
+    '--destructive': '0 84% 60%',
+    '--destructive-foreground': '0 0% 100%',
+    '--border': '40 15% 85%',
+    '--input': '40 15% 85%',
+    '--ring': hexToHsl(primaryColor),
   } as React.CSSProperties;
 
   const handlePhotoAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,7 +249,7 @@ export default function PublicBookingPage() {
   if (isSuccess) {
     const wppText = encodeURIComponent(`Olá ${tenant.name}! Acabei de agendar uma trança pelo sistema. Meu nome é ${clientData.name}.`);
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center" style={themeVars}>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center" style={publicThemeVars}>
         <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-8 mx-auto shadow-2xl shadow-emerald-500/20">
           <CheckCircle className="w-12 h-12" />
         </div>
@@ -258,7 +278,7 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" style={themeVars}>
+    <div className="min-h-screen bg-background" style={publicThemeVars}>
       {/* Header */}
       <div className="bg-card border-b border-border/50 sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 h-20 flex items-center gap-4">
