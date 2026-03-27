@@ -2,8 +2,23 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env["JWT_SECRET"] ?? "trancify-dev-secret-change-in-production";
+const JWT_SECRET = process.env["JWT_SECRET"];
+const IS_PRODUCTION = process.env["NODE_ENV"] === "production";
+
+if (!JWT_SECRET) {
+  if (IS_PRODUCTION) {
+    throw new Error("JWT_SECRET environment variable is required in production.");
+  }
+  console.warn(
+    "\x1b[33m[SECURITY WARNING]\x1b[0m JWT_SECRET is not set. " +
+    "Using an insecure fallback. Set JWT_SECRET before deploying to production."
+  );
+}
+
+const EFFECTIVE_JWT_SECRET = JWT_SECRET ?? "trancify-dev-insecure-secret-do-not-use-in-production";
 const JWT_EXPIRES_IN = "7d";
+
+export const MIN_PASSWORD_LENGTH = 8;
 
 export interface JwtPayload {
   userId: string;
@@ -14,11 +29,11 @@ export interface JwtPayload {
 }
 
 export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, EFFECTIVE_JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 export function verifyToken(token: string): JwtPayload {
-  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+  return jwt.verify(token, EFFECTIVE_JWT_SECRET) as JwtPayload;
 }
 
 export async function hashPassword(password: string): Promise<string> {

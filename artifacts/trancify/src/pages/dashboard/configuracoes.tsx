@@ -154,8 +154,8 @@ export default function ConfiguracoesPage() {
       toast({ title: "As senhas não coincidem", variant: "destructive" });
       return;
     }
-    if (passwords.newPassword.length < 6) {
-      toast({ title: "Nova senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+    if (passwords.newPassword.length < 8) {
+      toast({ title: "Nova senha deve ter pelo menos 8 caracteres", variant: "destructive" });
       return;
     }
     try {

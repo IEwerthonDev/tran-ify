@@ -73,8 +73,8 @@ export default function AdminContaPage() {
       toast({ title: "As senhas não coincidem", variant: "destructive" });
       return;
     }
-    if (passwordForm.newPassword.length < 6) {
-      toast({ title: "Nova senha deve ter pelo menos 6 caracteres", variant: "destructive" });
+    if (passwordForm.newPassword.length < 8) {
+      toast({ title: "Nova senha deve ter pelo menos 8 caracteres", variant: "destructive" });
       return;
     }
     try {
