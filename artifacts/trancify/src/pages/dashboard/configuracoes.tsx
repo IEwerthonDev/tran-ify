@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useGetMyTenant, useUpdateMyTenant } from "@workspace/api-client-react";
 import { useChangePassword } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Save, KeyRound, Store, ExternalLink, Palette, ChevronRight, Sparkles } from "lucide-react";
+import { Save, KeyRound, Store, ExternalLink, Palette, ChevronRight, Sparkles, Upload, Link, X, ImageIcon } from "lucide-react";
+import { useUpload } from "@workspace/object-storage-web";
 
 const DEFAULT_PRIMARY = "#7D2535";
 const DEFAULT_SECONDARY = "#FAF7F5";
@@ -142,12 +143,10 @@ export default function ConfiguracoesPage() {
               </Field>
 
               <div className="md:col-span-2">
-                <Field label="URL da Logo">
-                  <Input
+                <Field label="Logotipo do Salão">
+                  <LogoUploader
                     value={profile.logoUrl}
-                    onChange={(e) => setProfile({ ...profile, logoUrl: e.target.value })}
-                    placeholder="https://exemplo.com/logo.png"
-                    className="h-12"
+                    onChange={(url) => setProfile({ ...profile, logoUrl: url })}
                   />
                 </Field>
               </div>
@@ -318,6 +317,152 @@ export default function ConfiguracoesPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+function LogoUploader({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const [mode, setMode] = useState<"upload" | "url">(value && !value.startsWith("/api/") ? "url" : "upload");
+  const [urlInput, setUrlInput] = useState(value && !value.startsWith("/api/") ? value : "");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const { uploadFile, isUploading, progress } = useUpload({
+    basePath: "/api/storage",
+    onSuccess: (response) => {
+      const serveUrl = `/api/storage${response.objectPath}`;
+      onChange(serveUrl);
+      toast({ title: "Logo enviada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao enviar logo", variant: "destructive" });
+    },
+  });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Apenas imagens são permitidas", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Logo deve ter no máximo 5 MB", variant: "destructive" });
+      return;
+    }
+    await uploadFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+      await handleFileChange(fakeEvent);
+    }
+  };
+
+  const handleUrlApply = () => {
+    onChange(urlInput.trim());
+  };
+
+  const handleRemove = () => {
+    onChange("");
+    setUrlInput("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const isStorageUrl = value?.startsWith("/api/storage");
+  const displayUrl = value || "";
+
+  return (
+    <div className="space-y-3">
+      {/* Preview strip */}
+      {displayUrl && (
+        <div className="flex items-center gap-4 p-3 bg-secondary/50 rounded-xl border border-border">
+          <img
+            src={displayUrl}
+            alt="Logo preview"
+            className="w-16 h-16 rounded-xl object-contain border border-border bg-white"
+            onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">Logo atual</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs">
+              {isStorageUrl ? "Arquivo enviado" : displayUrl}
+            </p>
+          </div>
+          <button onClick={handleRemove} className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg hover:bg-destructive/10 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Mode tabs */}
+      <div className="flex rounded-xl border border-border overflow-hidden">
+        <button
+          onClick={() => setMode("upload")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${mode === "upload" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}
+        >
+          <Upload className="w-4 h-4" />
+          Enviar arquivo
+        </button>
+        <button
+          onClick={() => setMode("url")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${mode === "url" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-secondary"}`}
+        >
+          <Link className="w-4 h-4" />
+          Usar URL
+        </button>
+      </div>
+
+      {mode === "upload" ? (
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
+          className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/3 transition-all group"
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          {isUploading ? (
+            <div className="space-y-2">
+              <div className="w-8 h-8 mx-auto border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-muted-foreground">Enviando... {Math.round(progress)}%</p>
+              <div className="w-full bg-secondary rounded-full h-1.5">
+                <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/10 transition-colors">
+                <ImageIcon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Arraste ou clique para enviar</p>
+              <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG — máximo 5 MB</p>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <Input
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://exemplo.com/logo.png"
+            className="flex-1 h-11"
+            onKeyDown={(e) => e.key === "Enter" && handleUrlApply()}
+          />
+          <Button onClick={handleUrlApply} size="sm" className="h-11 px-4">
+            Aplicar
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 

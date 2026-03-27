@@ -7,6 +7,7 @@ import availabilityRouter from "./availability.js";
 import appointmentsRouter from "./appointments.js";
 import reportsRouter from "./reports.js";
 import adminRouter from "./admin.js";
+import storageRouter from "./storage.js";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/availability", availabilityRouter);
 router.use("/appointments", appointmentsRouter);
 router.use("/reports", reportsRouter);
 router.use("/admin", adminRouter);
+router.use("/storage", storageRouter);
 
 export default router;

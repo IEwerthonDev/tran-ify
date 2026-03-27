@@ -53,3 +53,5 @@ export * from "./updateAvailabilityRequest";
 export * from "./updateCostRequest";
 export * from "./updateServiceRequest";
 export * from "./updateTenantRequest";
+export * from "./uploadUrlRequest";
+export * from "./uploadUrlResponse";
