@@ -5,7 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Clock, Save, ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore, isToday, startOfDay } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  getDay,
+  isBefore,
+  isToday,
+  startOfDay,
+  addMonths,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -20,7 +30,10 @@ export default function DisponibilidadePage() {
   const { toast } = useToast();
 
   const now = new Date();
-  const currentMonthStart = startOfMonth(now);
+  const today = startOfDay(now);
+
+  // 0 = current month, 1 = next month
+  const [monthOffset, setMonthOffset] = useState(0);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [timeSettings, setTimeSettings] = useState({
@@ -45,9 +58,14 @@ export default function DisponibilidadePage() {
     }
   }, [availability]);
 
-  const daysInMonth = eachDayOfInterval({ start: currentMonthStart, end: endOfMonth(now) });
-  const firstDayOfWeek = getDay(currentMonthStart);
-  const today = startOfDay(now);
+  const viewMonthDate = addMonths(startOfMonth(now), monthOffset);
+  const viewMonthStart = startOfMonth(viewMonthDate);
+  const viewMonthEnd = endOfMonth(viewMonthDate);
+  const daysInView = eachDayOfInterval({ start: viewMonthStart, end: viewMonthEnd });
+  const firstDayOfWeek = getDay(viewMonthStart);
+
+  const monthLabel = format(viewMonthDate, "MMMM 'de' yyyy", { locale: ptBR });
+  const capitalizedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
   const toggleDate = (dateStr: string, dayDate: Date) => {
     if (isBefore(startOfDay(dayDate), today)) return;
@@ -64,14 +82,11 @@ export default function DisponibilidadePage() {
           availableDates: selectedDates,
         } as any,
       });
-      toast({ title: "Disponibilidade salva!", description: `${selectedDates.length} dia(s) disponíveis este mês.` });
+      toast({ title: "Disponibilidade salva!", description: `${selectedDates.length} dia(s) disponíveis configurados.` });
     } catch {
       toast({ title: "Erro ao salvar", variant: "destructive" });
     }
   };
-
-  const monthLabel = format(now, "MMMM 'de' yyyy", { locale: ptBR });
-  const capitalizedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
   if (isLoading) {
     return (
@@ -88,7 +103,7 @@ export default function DisponibilidadePage() {
     <DashboardLayout>
       <div className="mb-10">
         <h1 className="text-4xl font-display font-bold text-foreground">Disponibilidade</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Selecione os dias que você atende este mês.</p>
+        <p className="text-muted-foreground mt-2 text-lg">Selecione os dias que você atende nos próximos meses.</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -98,7 +113,25 @@ export default function DisponibilidadePage() {
           <div className="bg-card rounded-[2rem] border border-border/50 shadow-xl shadow-black/5 overflow-hidden">
             {/* Calendar Header */}
             <div className="flex items-center justify-between px-8 py-6 border-b border-border/50">
-              <h2 className="text-2xl font-display font-bold">{capitalizedMonth}</h2>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setMonthOffset(0)}
+                  disabled={monthOffset === 0}
+                  className="p-2 rounded-xl hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Mês anterior"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h2 className="text-2xl font-display font-bold w-56 text-center">{capitalizedMonth}</h2>
+                <button
+                  onClick={() => setMonthOffset(1)}
+                  disabled={monthOffset === 1}
+                  className="p-2 rounded-xl hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Próximo mês"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/60 px-4 py-2 rounded-xl">
                 <div className="w-3 h-3 rounded-sm" style={{ background: "#7D2535" }} />
                 <span>{selectedDates.length} dia{selectedDates.length !== 1 ? "s" : ""} selecionado{selectedDates.length !== 1 ? "s" : ""}</span>
@@ -114,12 +147,11 @@ export default function DisponibilidadePage() {
 
             {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1 p-4">
-              {/* Empty cells for days before the 1st */}
               {Array.from({ length: firstDayOfWeek }).map((_, i) => (
                 <div key={`empty-${i}`} />
               ))}
 
-              {daysInMonth.map(day => {
+              {daysInView.map(day => {
                 const dateStr = toDateStr(day);
                 const isPast = isBefore(startOfDay(day), today);
                 const isSelected = selectedDates.includes(dateStr);
@@ -253,11 +285,11 @@ export default function DisponibilidadePage() {
             <ul className="space-y-4 text-muted-foreground text-sm">
               <li className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
-                <p>Clique nos dias do mês atual que você vai atender. Os dias ficam em vinho quando selecionados.</p>
+                <p>Clique nos dias que você vai atender. Os dias ficam em vinho quando selecionados.</p>
               </li>
               <li className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
-                <p>Apenas os dias deste mês podem ser configurados. No próximo mês, você seleciona novamente.</p>
+                <p>Use as setas para navegar entre o mês atual e o próximo. Dias passados ficam desabilitados automaticamente.</p>
               </li>
               <li className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
@@ -278,10 +310,11 @@ export default function DisponibilidadePage() {
                   .slice()
                   .sort()
                   .map(d => {
-                    const [, , day] = d.split("-");
+                    const date = new Date(d + "T12:00:00");
+                    const label = format(date, "dd/MM", { locale: ptBR });
                     return (
                       <span key={d} className="text-xs font-bold text-white px-2.5 py-1 rounded-lg" style={{ background: "#7D2535" }}>
-                        {parseInt(day, 10)}
+                        {label}
                       </span>
                     );
                   })}
