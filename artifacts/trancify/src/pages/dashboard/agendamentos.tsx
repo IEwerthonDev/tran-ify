@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useGetMyAppointments, useUpdateAppointment, useUpdateAppointmentCost, useDeleteAppointment } from "@workspace/api-client-react";
 import { formatCurrency } from "@/lib/utils";
@@ -230,10 +231,11 @@ function DetailModal({ appointment }: { appointment: any }) {
         </DialogContent>
       </Dialog>
 
-      {/* Lightbox */}
-      {lightbox && (
+      {/* Lightbox — rendered via portal to stay above Radix Dialog */}
+      {lightbox && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 flex items-center justify-center p-4"
+          style={{ zIndex: 9999 }}
           onClick={() => setLightbox(null)}
         >
           <button
@@ -248,7 +250,8 @@ function DetailModal({ appointment }: { appointment: any }) {
             className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
             onClick={e => e.stopPropagation()}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
