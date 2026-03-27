@@ -15,6 +15,7 @@ import DisponibilidadePage from "@/pages/dashboard/disponibilidade";
 import AgendaPage from "@/pages/dashboard/agenda";
 import ConfiguracoesPage from "@/pages/dashboard/configuracoes";
 import RelatoriosPage from "@/pages/dashboard/relatorios";
+import AssinaturaPage from "@/pages/dashboard/assinatura";
 import AdminOverview from "@/pages/admin/index";
 import AdminTenants from "@/pages/admin/tenants";
 import AdminContaPage from "@/pages/admin/conta";
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/dashboard/agenda" component={() => <ProtectedRoute component={AgendaPage} allowedRole="tenant" />} />
       <Route path="/dashboard/configuracoes" component={() => <ProtectedRoute component={ConfiguracoesPage} allowedRole="tenant" />} />
       <Route path="/dashboard/relatorios" component={() => <ProtectedRoute component={RelatoriosPage} allowedRole="tenant" />} />
+      <Route path="/dashboard/assinatura" component={() => <ProtectedRoute component={AssinaturaPage} allowedRole="tenant" />} />
       
       {/* Admin Routes */}
       <Route path="/admin" component={() => <ProtectedRoute component={AdminOverview} allowedRole="super_admin" />} />

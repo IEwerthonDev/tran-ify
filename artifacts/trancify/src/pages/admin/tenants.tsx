@@ -9,21 +9,28 @@ import {
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, KeyRound, ExternalLink, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, KeyRound, ExternalLink, Calendar, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const PLAN_OPTIONS = ["basic", "professional", "enterprise"] as const;
-const PLAN_LABELS: Record<string, string> = {
-  basic: "Básico — R$49,90",
-  professional: "Profissional — R$99,90",
-  enterprise: "Enterprise — R$199,90",
-};
+function SubscriptionBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    trial:     { label: "Teste",     cls: "bg-blue-50 text-blue-700 border-blue-200" },
+    active:    { label: "Ativa",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    cancelled: { label: "Cancelada", cls: "bg-secondary text-muted-foreground border-border" },
+    expired:   { label: "Expirada",  cls: "bg-red-50 text-red-700 border-red-200" },
+  };
+  const { label, cls } = map[status] ?? { label: status, cls: "" };
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${cls}`}>
+      {label}
+    </span>
+  );
+}
 
 export default function AdminTenants() {
   const { data: tenants, isLoading, refetch } = useAdminGetTenants();
@@ -41,7 +48,7 @@ export default function AdminTenants() {
         <CreateTenantDialog onCreated={refetch} />
       </div>
 
-      {/* ── Mobile card list ── */}
+      {/* Mobile card list */}
       <div className="md:hidden space-y-3">
         {isLoading
           ? [1, 2, 3].map(i => (
@@ -57,7 +64,7 @@ export default function AdminTenants() {
         )}
       </div>
 
-      {/* ── Desktop table ── */}
+      {/* Desktop table */}
       <div className="hidden md:block bg-card border border-border/50 rounded-3xl overflow-hidden shadow-xl shadow-black/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -65,7 +72,7 @@ export default function AdminTenants() {
               <tr className="bg-secondary/50 border-b border-border text-muted-foreground text-xs uppercase tracking-wider">
                 <th className="p-4 pl-6 font-semibold">Nome / Slug</th>
                 <th className="p-4 font-semibold">Email</th>
-                <th className="p-4 font-semibold">Plano</th>
+                <th className="p-4 font-semibold">Assinatura</th>
                 <th className="p-4 font-semibold">Status</th>
                 <th className="p-4 font-semibold">Agendamentos</th>
                 <th className="p-4 font-semibold">Cadastro</th>
@@ -109,24 +116,13 @@ function TenantCard({ tenant, onUpdate }: { tenant: any; onUpdate: () => void })
             <p className="font-bold text-foreground truncate">{tenant.name}</p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <span>/{tenant.slug}</span>
-              <a
-                href={`/${tenant.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline inline-flex items-center"
-              >
+              <a href={`/${tenant.slug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center">
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
           </div>
         </div>
-        <span
-          className={`px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 ${
-            tenant.status === "active"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-red-50 text-red-700 border-red-200"
-          }`}
-        >
+        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 ${tenant.status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
           {tenant.status === "active" ? "Ativa" : "Bloqueada"}
         </span>
       </div>
@@ -134,7 +130,7 @@ function TenantCard({ tenant, onUpdate }: { tenant: any; onUpdate: () => void })
       <div className="text-xs text-muted-foreground mb-3 space-y-1">
         <p className="truncate">{tenant.email}</p>
         <div className="flex items-center justify-between">
-          <span className="capitalize font-medium text-foreground">{tenant.plan}</span>
+          <SubscriptionBadge status={tenant.subscriptionStatus ?? "trial"} />
           <span className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
             {tenant.totalAppointments} agendamentos
@@ -159,28 +155,17 @@ function TenantRow({ tenant, onUpdate }: { tenant: any; onUpdate: () => void }) 
         <div className="font-bold text-foreground">{tenant.name}</div>
         <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
           /{tenant.slug}
-          <a
-            href={`/${tenant.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline inline-flex items-center"
-          >
+          <a href={`/${tenant.slug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center">
             <ExternalLink className="w-3 h-3 ml-0.5" />
           </a>
         </div>
       </td>
       <td className="p-4 text-sm text-muted-foreground">{tenant.email}</td>
       <td className="p-4">
-        <span className="text-sm font-medium capitalize">{tenant.plan}</span>
+        <SubscriptionBadge status={tenant.subscriptionStatus ?? "trial"} />
       </td>
       <td className="p-4">
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-bold border ${
-            tenant.status === "active"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-red-50 text-red-700 border-red-200"
-          }`}
-        >
+        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${tenant.status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
           {tenant.status === "active" ? "Ativa" : "Bloqueada"}
         </span>
       </td>
@@ -201,23 +186,16 @@ function TenantRow({ tenant, onUpdate }: { tenant: any; onUpdate: () => void }) 
 
 function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    slug: "",
-    plan: "basic" as "basic" | "professional" | "enterprise",
-    whatsapp: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "", slug: "", whatsapp: "" });
   const createMutation = useAdminCreateTenant();
   const { toast } = useToast();
 
   const handleCreate = async () => {
     try {
-      await createMutation.mutateAsync({ data: form });
+      await createMutation.mutateAsync({ data: form as any });
       toast({ title: "Trancista criada com sucesso!" });
       setOpen(false);
-      setForm({ name: "", email: "", password: "", slug: "", plan: "basic", whatsapp: "" });
+      setForm({ name: "", email: "", password: "", slug: "", whatsapp: "" });
       onCreated();
     } catch (e: any) {
       toast({
@@ -257,15 +235,10 @@ function CreateTenantDialog({ onCreated }: { onCreated: () => void }) {
           <Field label="WhatsApp (com DDI)">
             <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="5511999887766" />
           </Field>
-          <Field label="Plano">
-            <select
-              value={form.plan}
-              onChange={(e) => setForm({ ...form, plan: e.target.value as any })}
-              className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-            >
-              {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{PLAN_LABELS[p]}</option>)}
-            </select>
-          </Field>
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 flex items-center gap-2.5 text-sm text-blue-700 dark:text-blue-300">
+            <Clock className="w-4 h-4 shrink-0" />
+            A trancista iniciará com 7 dias de teste gratuito automaticamente.
+          </div>
         </div>
         <DialogFooter className="mt-4 flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">Cancelar</Button>
@@ -283,14 +256,14 @@ function EditTenantDialog({ tenant, onUpdated }: { tenant: any; onUpdated: () =>
   const [form, setForm] = useState({
     name: tenant.name,
     status: tenant.status as "active" | "blocked",
-    plan: tenant.plan as "basic" | "professional" | "enterprise",
+    subscriptionStatus: (tenant.subscriptionStatus ?? "trial") as "trial" | "active" | "cancelled" | "expired",
   });
   const updateMutation = useAdminUpdateTenant();
   const { toast } = useToast();
 
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ id: tenant.id, data: form });
+      await updateMutation.mutateAsync({ id: tenant.id, data: form as any });
       toast({ title: "Dados atualizados!" });
       setOpen(false);
       onUpdated();
@@ -314,7 +287,7 @@ function EditTenantDialog({ tenant, onUpdated }: { tenant: any; onUpdated: () =>
           <Field label="Nome">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
-          <Field label="Status">
+          <Field label="Status da conta">
             <select
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value as any })}
@@ -324,13 +297,16 @@ function EditTenantDialog({ tenant, onUpdated }: { tenant: any; onUpdated: () =>
               <option value="blocked">Bloqueada</option>
             </select>
           </Field>
-          <Field label="Plano">
+          <Field label="Status da assinatura">
             <select
-              value={form.plan}
-              onChange={(e) => setForm({ ...form, plan: e.target.value as any })}
+              value={form.subscriptionStatus}
+              onChange={(e) => setForm({ ...form, subscriptionStatus: e.target.value as any })}
               className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
             >
-              {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{PLAN_LABELS[p]}</option>)}
+              <option value="trial">Período de teste</option>
+              <option value="active">Ativa</option>
+              <option value="cancelled">Cancelada</option>
+              <option value="expired">Expirada</option>
             </select>
           </Field>
         </div>

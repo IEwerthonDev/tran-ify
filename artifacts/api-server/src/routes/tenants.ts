@@ -17,6 +17,10 @@ const updateTenantSchema = z.object({
   secondaryColor: z.string().optional(),
 });
 
+const activateSubscriptionSchema = z.object({
+  plan: z.enum(["monthly", "annual"]),
+});
+
 function formatTenant(tenant: typeof tenantsTable.$inferSelect) {
   return {
     id: tenant.id,
@@ -28,7 +32,11 @@ function formatTenant(tenant: typeof tenantsTable.$inferSelect) {
     primaryColor: tenant.primaryColor ?? null,
     secondaryColor: tenant.secondaryColor ?? null,
     status: tenant.status,
-    plan: tenant.plan,
+    subscriptionStatus: tenant.subscriptionStatus,
+    subscriptionPlan: tenant.subscriptionPlan ?? null,
+    trialEndsAt: tenant.trialEndsAt.toISOString(),
+    subscriptionStartedAt: tenant.subscriptionStartedAt?.toISOString() ?? null,
+    subscriptionEndsAt: tenant.subscriptionEndsAt?.toISOString() ?? null,
     createdAt: tenant.createdAt.toISOString(),
   };
 }
@@ -75,6 +83,108 @@ router.patch("/me", requireTenant, async (req: AuthRequest, res) => {
       return;
     }
     req.log.error({ err }, "Update tenant error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno" });
+  }
+});
+
+router.get("/subscription", requireTenant, async (req: AuthRequest, res) => {
+  try {
+    const [tenant] = await db.select().from(tenantsTable).where(eq(tenantsTable.id, req.user!.tenantId!)).limit(1);
+
+    if (!tenant) {
+      res.status(404).json({ error: "NotFound", message: "Tenant não encontrado" });
+      return;
+    }
+
+    const now = new Date();
+    let subscriptionStatus = tenant.subscriptionStatus;
+
+    if (subscriptionStatus === "trial" && tenant.trialEndsAt < now) {
+      subscriptionStatus = "expired";
+      await db.update(tenantsTable).set({ subscriptionStatus: "expired", updatedAt: new Date() }).where(eq(tenantsTable.id, tenant.id));
+    }
+
+    res.json({
+      subscriptionStatus,
+      subscriptionPlan: tenant.subscriptionPlan ?? null,
+      trialEndsAt: tenant.trialEndsAt.toISOString(),
+      subscriptionStartedAt: tenant.subscriptionStartedAt?.toISOString() ?? null,
+      subscriptionEndsAt: tenant.subscriptionEndsAt?.toISOString() ?? null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Get subscription error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno" });
+  }
+});
+
+router.post("/subscription/activate", requireTenant, async (req: AuthRequest, res) => {
+  const parsed = activateSubscriptionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "ValidationError", message: "Dados inválidos" });
+    return;
+  }
+
+  try {
+    const { plan } = parsed.data;
+    const now = new Date();
+    const endsAt = plan === "annual"
+      ? new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000)
+      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const [updated] = await db
+      .update(tenantsTable)
+      .set({
+        subscriptionStatus: "active",
+        subscriptionPlan: plan,
+        subscriptionStartedAt: now,
+        subscriptionEndsAt: endsAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(tenantsTable.id, req.user!.tenantId!))
+      .returning();
+
+    res.json({
+      subscriptionStatus: updated!.subscriptionStatus,
+      subscriptionPlan: updated!.subscriptionPlan ?? null,
+      trialEndsAt: updated!.trialEndsAt.toISOString(),
+      subscriptionStartedAt: updated!.subscriptionStartedAt?.toISOString() ?? null,
+      subscriptionEndsAt: updated!.subscriptionEndsAt?.toISOString() ?? null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Activate subscription error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno" });
+  }
+});
+
+router.post("/subscription/cancel", requireTenant, async (req: AuthRequest, res) => {
+  try {
+    const [tenant] = await db.select().from(tenantsTable).where(eq(tenantsTable.id, req.user!.tenantId!)).limit(1);
+
+    if (!tenant) {
+      res.status(404).json({ error: "NotFound", message: "Tenant não encontrado" });
+      return;
+    }
+
+    if (tenant.subscriptionStatus !== "active") {
+      res.status(400).json({ error: "BadRequest", message: "Assinatura não está ativa" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(tenantsTable)
+      .set({ subscriptionStatus: "cancelled", updatedAt: new Date() })
+      .where(eq(tenantsTable.id, req.user!.tenantId!))
+      .returning();
+
+    res.json({
+      subscriptionStatus: updated!.subscriptionStatus,
+      subscriptionPlan: updated!.subscriptionPlan ?? null,
+      trialEndsAt: updated!.trialEndsAt.toISOString(),
+      subscriptionStartedAt: updated!.subscriptionStartedAt?.toISOString() ?? null,
+      subscriptionEndsAt: updated!.subscriptionEndsAt?.toISOString() ?? null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Cancel subscription error");
     res.status(500).json({ error: "InternalError", message: "Erro interno" });
   }
 });

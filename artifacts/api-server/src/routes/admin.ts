@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, usersTable, tenantsTable, appointmentsTable } from "@workspace/db";
-import { eq, count, sql } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { requireSuperAdmin, hashPassword, type AuthRequest } from "../lib/auth.js";
 import { z } from "zod";
 
@@ -11,7 +11,6 @@ const createTenantSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
-  plan: z.enum(["basic", "professional", "enterprise"]),
   whatsapp: z.string().optional(),
 });
 
@@ -19,7 +18,7 @@ const updateTenantSchema = z.object({
   name: z.string().optional(),
   email: z.string().email().optional(),
   status: z.enum(["active", "blocked"]).optional(),
-  plan: z.enum(["basic", "professional", "enterprise"]).optional(),
+  subscriptionStatus: z.enum(["trial", "active", "cancelled", "expired"]).optional(),
   blockAt: z.string().optional(),
 });
 
@@ -27,11 +26,15 @@ const resetPasswordSchema = z.object({
   newPassword: z.string().min(6),
 });
 
-const planPrices: Record<string, number> = {
-  basic: 49.9,
-  professional: 99.9,
-  enterprise: 199.9,
-};
+function subscriptionLabel(t: typeof tenantsTable.$inferSelect): string {
+  switch (t.subscriptionStatus) {
+    case "trial": return "Período de teste";
+    case "active": return t.subscriptionPlan === "annual" ? "Anual" : "Mensal";
+    case "cancelled": return "Cancelada";
+    case "expired": return "Expirada";
+    default: return "-";
+  }
+}
 
 async function formatAdminTenant(tenant: typeof tenantsTable.$inferSelect) {
   const user = await db.select().from(usersTable).where(eq(usersTable.id, tenant.userId)).limit(1);
@@ -46,8 +49,12 @@ async function formatAdminTenant(tenant: typeof tenantsTable.$inferSelect) {
     name: tenant.name,
     email: user[0]?.email ?? "",
     status: tenant.status,
-    plan: tenant.plan,
-    planPrice: planPrices[tenant.plan] ?? 49.9,
+    subscriptionStatus: tenant.subscriptionStatus,
+    subscriptionPlan: tenant.subscriptionPlan ?? null,
+    subscriptionLabel: subscriptionLabel(tenant),
+    trialEndsAt: tenant.trialEndsAt.toISOString(),
+    subscriptionStartedAt: tenant.subscriptionStartedAt?.toISOString() ?? null,
+    subscriptionEndsAt: tenant.subscriptionEndsAt?.toISOString() ?? null,
     totalAppointments: apptCount[0]?.count ?? 0,
     createdAt: tenant.createdAt.toISOString(),
     lastActiveAt: tenant.lastActiveAt?.toISOString() ?? null,
@@ -73,7 +80,7 @@ router.post("/tenants", requireSuperAdmin, async (req: AuthRequest, res) => {
     return;
   }
 
-  const { name, email, password, slug, plan, whatsapp } = parsed.data;
+  const { name, email, password, slug, whatsapp } = parsed.data;
 
   try {
     const existingEmail = await db.select().from(usersTable).where(eq(usersTable.email, email.toLowerCase())).limit(1);
@@ -93,7 +100,7 @@ router.post("/tenants", requireSuperAdmin, async (req: AuthRequest, res) => {
 
     const [tenant] = await db
       .insert(tenantsTable)
-      .values({ userId: user!.id, name, slug, plan, whatsapp })
+      .values({ userId: user!.id, name, slug, whatsapp })
       .returning();
 
     res.status(201).json(await formatAdminTenant(tenant!));
@@ -121,7 +128,7 @@ router.patch("/tenants/:id", requireSuperAdmin, async (req: AuthRequest, res) =>
     const updateData: Partial<typeof tenantsTable.$inferInsert> = {};
     if (parsed.data.name) updateData.name = parsed.data.name;
     if (parsed.data.status) updateData.status = parsed.data.status;
-    if (parsed.data.plan) updateData.plan = parsed.data.plan;
+    if (parsed.data.subscriptionStatus) updateData.subscriptionStatus = parsed.data.subscriptionStatus;
     if (parsed.data.blockAt) updateData.blockAt = new Date(parsed.data.blockAt);
 
     const [updated] = await db
