@@ -306,27 +306,28 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2"
-          >
-            <button
-              onClick={() => document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" })}
-              className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <span className="text-xs font-medium">Saiba mais</span>
-              <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                <ChevronDown className="w-5 h-5" />
-              </motion.div>
-            </button>
-          </motion.div>
         </div>
+
+        {/* Scroll indicator — anchored to the section, not the content div */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <button
+            onClick={() => document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" })}
+            className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <span className="text-xs font-medium">Saiba mais</span>
+            <motion.div
+              animate={{ y: [0, 6, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            >
+              <ChevronDown className="w-5 h-5" />
+            </motion.div>
+          </button>
+        </motion.div>
       </section>
 
       {/* ── COMO FUNCIONA ────────────────────────────────────────────────── */}
