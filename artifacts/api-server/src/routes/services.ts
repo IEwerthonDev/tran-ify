@@ -12,7 +12,7 @@ const createServiceSchema = z.object({
   durationHours: z.number().positive(),
   priceSmall: z.number().positive(),
   priceLarge: z.number().positive(),
-  sizeDependent: z.boolean(),
+  sizeDependent: z.boolean().optional().default(true),
 });
 
 const updateServiceSchema = createServiceSchema.partial().extend({
