@@ -297,7 +297,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                <span>1 semana grátis, sem cartão</span>
+                <span>7 dias grátis · cobrança só depois</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-primary" />
@@ -417,7 +417,7 @@ export default function HomePage() {
               <div className="bg-primary px-6 py-3 text-center">
                 <p className="text-white text-sm font-semibold flex items-center justify-center gap-2">
                   <Sparkles className="w-4 h-4" />
-                  Experimente grátis por 7 dias — sem precisar de cartão
+                  7 dias grátis — cartão necessário, cobrança automática só após o período
                 </p>
               </div>
 
@@ -458,7 +458,7 @@ export default function HomePage() {
               <div>
                 <p className="font-semibold text-foreground text-sm mb-1">Como funciona o período de teste?</p>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Você tem <strong className="text-foreground">7 dias completos</strong> para explorar a plataforma sem nenhum custo. Ao final do período, sua conta é pausada automaticamente até a ativação da assinatura — seus dados ficam salvos com segurança.
+                  Você cadastra o cartão no início, mas <strong className="text-foreground">não cobramos nada nos primeiros 7 dias</strong>. Após o período, a assinatura de R$ 50/mês é ativada automaticamente. Cancele antes se preferir — sem multa.
                 </p>
               </div>
             </div>
@@ -484,7 +484,7 @@ export default function HomePage() {
               seu salão do jeito Trancify.
             </h2>
             <p className="text-white/80 text-lg mb-10 max-w-xl mx-auto">
-              Entre em contato, criamos sua conta agora e você já começa sua semana grátis. Sem burocracia, sem cartão de crédito.
+              Entre em contato, criamos sua conta e coletamos os dados do cartão. Os primeiros 7 dias são completamente grátis — a cobrança de R$ 50 começa automaticamente só depois.
             </p>
 
             <a
