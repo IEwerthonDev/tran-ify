@@ -120,7 +120,10 @@ function DetailModal({ appointment }: { appointment: any }) {
             <span className="hidden sm:inline">Ver</span>
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-lg max-h-[90vh] overflow-y-auto"
+          onInteractOutside={(e) => { if (lightbox) e.preventDefault(); }}
+        >
           <DialogHeader>
             <DialogTitle className="text-xl font-display font-bold">Detalhes do Agendamento</DialogTitle>
           </DialogHeader>
