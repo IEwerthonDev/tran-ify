@@ -13,7 +13,7 @@ const bookSchema = z.object({
   serviceId: z.string(),
   clientName: z.string().min(1),
   clientAge: z.number().int().positive().optional(),
-  clientPhone: z.string().optional(),
+  clientPhone: z.string().min(10, "Celular é obrigatório"),
   hairDescription: z.string().optional(),
   referencePhotos: z.array(z.string()).max(3).optional(),
   paymentMethod: z.enum(["pix", "card", "cash"]),
