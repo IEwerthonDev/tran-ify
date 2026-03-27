@@ -191,26 +191,23 @@ router.post("/book", async (req, res) => {
 
     const [tenant] = await db.select().from(tenantsTable).where(eq(tenantsTable.id, data.tenantId)).limit(1);
 
-    if (tenant?.whatsapp) {
-      sendBookingNotification({
-        tenantPhone: tenant.whatsapp,
-        tenantName: tenant.name,
-        clientName: data.clientName,
-        clientPhone: data.clientPhone ?? null,
-        clientAge: data.clientAge ?? null,
-        serviceName: service.name,
-        braidSize: data.braidSize,
-        servicePrice,
-        paymentMethod: data.paymentMethod,
-        date: data.date,
-        time: data.time,
-        hairDescription: data.hairDescription ?? null,
-        referencePhotos: data.referencePhotos ?? [],
-        notes: data.notes ?? null,
-      }).catch((err) => {
-        req.log.warn({ err }, "WhatsApp notification failed — booking still saved");
-      });
-    }
+    sendBookingNotification({
+      tenantName: tenant?.name ?? "Salão",
+      clientName: data.clientName,
+      clientPhone: data.clientPhone ?? null,
+      clientAge: data.clientAge ?? null,
+      serviceName: service.name,
+      braidSize: data.braidSize,
+      servicePrice,
+      paymentMethod: data.paymentMethod,
+      date: data.date,
+      time: data.time,
+      hairDescription: data.hairDescription ?? null,
+      referencePhotos: data.referencePhotos ?? [],
+      notes: data.notes ?? null,
+    }).catch((err) => {
+      req.log.warn({ err }, "WhatsApp notification failed — booking still saved");
+    });
 
     res.status(201).json(formatAppointment(appointment!));
   } catch (err) {

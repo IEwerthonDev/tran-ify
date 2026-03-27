@@ -44,6 +44,7 @@ export default function PublicBookingPage() {
     hairDesc: "",
     payment: "pix" as "pix" | "card" | "cash"
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: availability, isLoading: loadAvail } = useGetPublicAvailability(
     tenant?.id || "", 
@@ -82,7 +83,39 @@ export default function PublicBookingPage() {
     setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const validateClientData = () => {
+    const newErrors: Record<string, string> = {};
+    const nameTrimmed = clientData.name.trim();
+    if (!nameTrimmed) {
+      newErrors.name = "Nome é obrigatório";
+    } else if (nameTrimmed.length < 2) {
+      newErrors.name = "Nome deve ter pelo menos 2 caracteres";
+    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(nameTrimmed)) {
+      newErrors.name = "Nome deve conter apenas letras";
+    }
+
+    const phoneDigits = clientData.phone.replace(/\D/g, "");
+    if (!clientData.phone) {
+      newErrors.phone = "WhatsApp é obrigatório";
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      newErrors.phone = "Informe um número válido com DDD (ex: 11 99999-0000)";
+    }
+
+    if (clientData.age) {
+      const ageNum = Number(clientData.age);
+      if (isNaN(ageNum) || !Number.isInteger(ageNum)) {
+        newErrors.age = "Idade deve ser um número inteiro";
+      } else if (ageNum < 13 || ageNum > 90) {
+        newErrors.age = "Idade deve ser entre 13 e 90 anos";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleBook = async () => {
+    if (!validateClientData()) return;
     try {
       await bookMutation.mutateAsync({
         data: {
@@ -272,17 +305,38 @@ export default function PublicBookingPage() {
 
               <div className="bg-card p-6 sm:p-8 rounded-[2rem] border border-border shadow-xl space-y-6">
                 <div>
-                  <label className="text-sm font-semibold mb-1 block">Nome Completo</label>
-                  <Input value={clientData.name} onChange={e => setClientData({...clientData, name: e.target.value})} placeholder="Maria Silva" />
+                  <label className="text-sm font-semibold mb-1 block">Nome Completo <span className="text-destructive">*</span></label>
+                  <Input
+                    value={clientData.name}
+                    onChange={e => { setClientData({...clientData, name: e.target.value}); if (errors.name) setErrors(p => ({...p, name: ""})); }}
+                    placeholder="Maria Silva"
+                    className={errors.name ? "border-destructive focus:ring-destructive/20" : ""}
+                  />
+                  {errors.name && <p className="text-destructive text-xs mt-1 font-medium">{errors.name}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-semibold mb-1 block">WhatsApp</label>
-                    <Input value={clientData.phone} onChange={e => setClientData({...clientData, phone: e.target.value})} placeholder="(11) 90000-0000" />
+                    <label className="text-sm font-semibold mb-1 block">WhatsApp <span className="text-destructive">*</span></label>
+                    <Input
+                      value={clientData.phone}
+                      onChange={e => { setClientData({...clientData, phone: e.target.value}); if (errors.phone) setErrors(p => ({...p, phone: ""})); }}
+                      placeholder="(11) 90000-0000"
+                      className={errors.phone ? "border-destructive focus:ring-destructive/20" : ""}
+                    />
+                    {errors.phone && <p className="text-destructive text-xs mt-1 font-medium">{errors.phone}</p>}
                   </div>
                   <div>
-                    <label className="text-sm font-semibold mb-1 block">Idade</label>
-                    <Input type="number" value={clientData.age} onChange={e => setClientData({...clientData, age: e.target.value})} placeholder="25" />
+                    <label className="text-sm font-semibold mb-1 block">Idade <span className="text-muted-foreground font-normal">(Opcional)</span></label>
+                    <Input
+                      type="number"
+                      value={clientData.age}
+                      onChange={e => { setClientData({...clientData, age: e.target.value}); if (errors.age) setErrors(p => ({...p, age: ""})); }}
+                      placeholder="25"
+                      min={13}
+                      max={90}
+                      className={errors.age ? "border-destructive focus:ring-destructive/20" : ""}
+                    />
+                    {errors.age && <p className="text-destructive text-xs mt-1 font-medium">{errors.age}</p>}
                   </div>
                 </div>
                 <div>
@@ -381,7 +435,7 @@ export default function PublicBookingPage() {
               </div>
 
               <div className="mt-12">
-                <Button size="lg" className="w-full h-16 text-xl rounded-2xl shadow-xl shadow-primary/30" onClick={handleBook} disabled={bookMutation.isPending || !clientData.name || !clientData.phone}>
+                <Button size="lg" className="w-full h-16 text-xl rounded-2xl shadow-xl shadow-primary/30" onClick={handleBook} disabled={bookMutation.isPending}>
                   {bookMutation.isPending ? "Agendando..." : "Confirmar Agendamento"}
                 </Button>
               </div>

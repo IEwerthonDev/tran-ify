@@ -9,6 +9,7 @@ const router = Router();
 
 const updateAvailabilitySchema = z.object({
   availableDays: z.array(z.number().min(0).max(6)).optional(),
+  availableDates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
   startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   slotIntervalMinutes: z.number().positive().optional(),
@@ -33,6 +34,7 @@ function formatAvailability(avail: typeof availabilityTable.$inferSelect) {
     id: avail.id,
     tenantId: avail.tenantId,
     availableDays: avail.availableDays as number[],
+    availableDates: ((avail as any).availableDates as string[]) ?? [],
     startTime: avail.startTime,
     endTime: avail.endTime,
     slotIntervalMinutes: avail.slotIntervalMinutes,

@@ -22,10 +22,16 @@ export function computeAvailableSlots(
   serviceDurationHours: number,
   date: string
 ): string[] {
-  const dayOfWeek = new Date(date + "T12:00:00Z").getDay();
-  const availableDays = availability.availableDays as number[];
+  // If specific dates are configured, use them; otherwise fall back to day-of-week
+  const availableDates = (availability as any).availableDates as string[] | undefined;
 
-  if (!availableDays.includes(dayOfWeek)) return [];
+  if (availableDates && availableDates.length > 0) {
+    if (!availableDates.includes(date)) return [];
+  } else {
+    const dayOfWeek = new Date(date + "T12:00:00Z").getDay();
+    const availableDays = availability.availableDays as number[];
+    if (!availableDays.includes(dayOfWeek)) return [];
+  }
 
   const blockedDates = availability.blockedDates as string[];
   if (blockedDates.includes(date)) return [];

@@ -12,6 +12,7 @@ export const availabilityTable = pgTable("availability", {
   slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(30),
   breakAfterMinutes: integer("break_after_minutes").notNull().default(90),
   maxAppointmentsPerDay: integer("max_appointments_per_day").notNull().default(2),
+  availableDates: json("available_dates").$type<string[]>().notNull().default([]),
   blockedDates: json("blocked_dates").$type<string[]>().notNull().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
