@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useGetMyAppointments, useUpdateAppointment, useUpdateAppointmentCost, useDeleteAppointment } from "@workspace/api-client-react";
 import { formatCurrency } from "@/lib/utils";
@@ -231,31 +230,30 @@ function DetailModal({ appointment }: { appointment: any }) {
               </div>
             )}
           </div>
+
+          {/* Lightbox — inside DialogContent so it's within the focus trap */}
+          {lightbox && (
+            <div
+              className="fixed inset-0 bg-black/90 flex items-center justify-center p-4"
+              style={{ zIndex: 9999 }}
+              onClick={() => setLightbox(null)}
+            >
+              <button
+                className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors"
+                onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img
+                src={lightbox}
+                alt="Foto ampliada"
+                className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
-
-      {/* Lightbox — rendered via portal to stay above Radix Dialog */}
-      {lightbox && createPortal(
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center p-4"
-          style={{ zIndex: 9999 }}
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 rounded-full p-2 transition-colors"
-            onClick={() => setLightbox(null)}
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <img
-            src={lightbox}
-            alt="Foto ampliada"
-            className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
-            onClick={e => e.stopPropagation()}
-          />
-        </div>,
-        document.body
-      )}
     </>
   );
 }
