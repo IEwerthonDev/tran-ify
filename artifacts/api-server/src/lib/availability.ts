@@ -51,7 +51,7 @@ export function computeAvailableSlots(
 
   const slots: string[] = [];
 
-  for (let slotStart = startMins; slotStart + serviceDurationMins <= endMins; slotStart += interval) {
+  for (let slotStart = startMins; slotStart <= endMins; slotStart += interval) {
     const slotEnd = slotStart + serviceDurationMins;
 
     let blocked = false;
