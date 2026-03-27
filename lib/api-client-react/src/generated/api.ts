@@ -25,6 +25,7 @@ import type {
   Appointment,
   AuthUser,
   Availability,
+  AvailableDates,
   AvailableSlots,
   BookAppointmentRequest,
   ChangePasswordRequest,
@@ -1276,6 +1277,101 @@ export const useUpdateAvailability = <
 > => {
   return useMutation(getUpdateAvailabilityMutationOptions(options));
 };
+
+/**
+ * @summary Get available dates for a tenant (for calendar display)
+ */
+export const getGetPublicAvailabilityDatesUrl = (tenantId: string) => {
+  return `/api/availability/public/${tenantId}/dates`;
+};
+
+export const getPublicAvailabilityDates = async (
+  tenantId: string,
+  options?: RequestInit,
+): Promise<AvailableDates> => {
+  return customFetch<AvailableDates>(
+    getGetPublicAvailabilityDatesUrl(tenantId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPublicAvailabilityDatesQueryKey = (tenantId: string) => {
+  return [`/api/availability/public/${tenantId}/dates`] as const;
+};
+
+export const getGetPublicAvailabilityDatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPublicAvailabilityDates>>,
+  TError = ErrorType<unknown>,
+>(
+  tenantId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicAvailabilityDates>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPublicAvailabilityDatesQueryKey(tenantId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPublicAvailabilityDates>>
+  > = ({ signal }) =>
+    getPublicAvailabilityDates(tenantId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!tenantId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPublicAvailabilityDates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPublicAvailabilityDatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPublicAvailabilityDates>>
+>;
+export type GetPublicAvailabilityDatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get available dates for a tenant (for calendar display)
+ */
+
+export function useGetPublicAvailabilityDates<
+  TData = Awaited<ReturnType<typeof getPublicAvailabilityDates>>,
+  TError = ErrorType<unknown>,
+>(
+  tenantId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPublicAvailabilityDates>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPublicAvailabilityDatesQueryOptions(
+    tenantId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Get available time slots for a tenant on a given date

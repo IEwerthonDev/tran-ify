@@ -77,6 +77,35 @@ router.put("/", requireTenant, async (req: AuthRequest, res) => {
   }
 });
 
+router.get("/public/:tenantId/dates", async (req, res) => {
+  const { tenantId } = req.params;
+
+  try {
+    const [avail] = await db.select().from(availabilityTable).where(eq(availabilityTable.tenantId, tenantId!)).limit(1);
+
+    if (!avail) {
+      res.json({ availableDates: [] });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0]!;
+
+    const availableDates = ((avail as any).availableDates as string[] | undefined) ?? [];
+    const blockedDates = (avail.blockedDates as string[]) ?? [];
+
+    const futureDates = availableDates.filter(
+      (d) => d >= todayStr && !blockedDates.includes(d)
+    );
+
+    res.json({ availableDates: futureDates });
+  } catch (err) {
+    req.log.error({ err }, "Get public availability dates error");
+    res.status(500).json({ error: "InternalError", message: "Erro interno" });
+  }
+});
+
 router.get("/public/:tenantId", async (req, res) => {
   const { tenantId } = req.params;
   const { date, serviceId } = req.query as { date: string; serviceId: string };

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type TenantReportAppointmentsByStatus = { [key: string]: number };
+export interface AvailableDates {
+  /** List of available dates in YYYY-MM-DD format */
+  availableDates: Date[];
+}

@@ -23,6 +23,7 @@ export * from "./appointmentStatus";
 export * from "./authUser";
 export * from "./authUserRole";
 export * from "./availability";
+export * from "./availableDates";
 export * from "./availableSlots";
 export * from "./bookAppointmentRequest";
 export * from "./bookAppointmentRequestBraidSize";

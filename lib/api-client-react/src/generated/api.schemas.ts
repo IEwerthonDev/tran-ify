@@ -157,6 +157,11 @@ export interface AvailableSlots {
   available: boolean;
 }
 
+export interface AvailableDates {
+  /** List of available dates in YYYY-MM-DD format */
+  availableDates: string[];
+}
+
 export type AppointmentPaymentMethod =
   (typeof AppointmentPaymentMethod)[keyof typeof AppointmentPaymentMethod];
 

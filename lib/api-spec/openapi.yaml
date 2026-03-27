@@ -309,6 +309,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/Availability"
 
+  /availability/public/{tenantId}/dates:
+    get:
+      operationId: getPublicAvailabilityDates
+      tags: [availability]
+      summary: Get available dates for a tenant (for calendar display)
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Available dates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailableDates"
+
   /availability/public/{tenantId}:
     get:
       operationId: getPublicAvailability
@@ -880,6 +899,17 @@ components:
         available:
           type: boolean
       required: [date, slots, available]
+
+    AvailableDates:
+      type: object
+      properties:
+        availableDates:
+          type: array
+          items:
+            type: string
+            format: date
+          description: List of available dates in YYYY-MM-DD format
+      required: [availableDates]
 
     Appointment:
       type: object

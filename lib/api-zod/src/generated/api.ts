@@ -257,6 +257,19 @@ export const UpdateAvailabilityResponse = zod.object({
 });
 
 /**
+ * @summary Get available dates for a tenant (for calendar display)
+ */
+export const GetPublicAvailabilityDatesParams = zod.object({
+  tenantId: zod.coerce.string(),
+});
+
+export const GetPublicAvailabilityDatesResponse = zod.object({
+  availableDates: zod
+    .array(zod.date())
+    .describe("List of available dates in YYYY-MM-DD format"),
+});
+
+/**
  * @summary Get available time slots for a tenant on a given date
  */
 export const GetPublicAvailabilityParams = zod.object({
