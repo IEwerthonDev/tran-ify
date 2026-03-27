@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, appointmentsTable, servicesTable, availabilityTable, tenantsTable } from "@workspace/db";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, ne } from "drizzle-orm";
 import { requireTenant, type AuthRequest } from "../lib/auth.js";
 import { computeAvailableSlots } from "../lib/availability.js";
 import { sendBookingNotification } from "../lib/whatsapp.js";
@@ -136,17 +136,16 @@ router.post("/book", async (req, res) => {
     const [avail] = await db.select().from(availabilityTable).where(eq(availabilityTable.tenantId, data.tenantId)).limit(1);
 
     if (avail) {
-      const existingOnDay = await db
+      const activeAppts = await db
         .select({ time: appointmentsTable.time, serviceId: appointmentsTable.serviceId })
         .from(appointmentsTable)
         .where(
           and(
             eq(appointmentsTable.tenantId, data.tenantId),
-            eq(appointmentsTable.date, data.date)
+            eq(appointmentsTable.date, data.date),
+            ne(appointmentsTable.status, "cancelled")
           )
         );
-
-      const activeAppts = existingOnDay.filter(a => true);
 
       const appointmentsWithDuration = await Promise.all(
         activeAppts.map(async (appt) => {

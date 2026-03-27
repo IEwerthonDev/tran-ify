@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useGetMyAppointments, useUpdateAppointment, useUpdateAppointmentCost } from "@workspace/api-client-react";
+import { useGetMyAppointments, useUpdateAppointment, useUpdateAppointmentCost, useDeleteAppointment } from "@workspace/api-client-react";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
@@ -8,7 +8,7 @@ import { ptBR } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Calendar } from "lucide-react";
+import { Calendar, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AgendamentosPage() {
@@ -120,23 +120,48 @@ function ActionMenu({ appointment, onUpdate }: { appointment: any, onUpdate: () 
   const [isCostOpen, setIsCostOpen] = useState(false);
   const updateStatus = useUpdateAppointment();
   const updateCost = useUpdateAppointmentCost();
+  const deleteAppt = useDeleteAppointment();
   const { toast } = useToast();
 
   const handleStatus = async (status: any) => {
-    await updateStatus.mutateAsync({ id: appointment.id, data: { status } });
-    toast({ title: "Status atualizado" });
-    onUpdate();
+    try {
+      await updateStatus.mutateAsync({ id: appointment.id, data: { status } });
+      toast({ title: "Status atualizado" });
+      onUpdate();
+    } catch {
+      toast({ title: "Erro ao atualizar status", variant: "destructive" });
+    }
   };
 
   const handleSaveCost = async () => {
-    await updateCost.mutateAsync({ id: appointment.id, data: { materialCost: Number(costStr) } });
-    toast({ title: "Custo salvo com sucesso" });
-    setIsCostOpen(false);
-    onUpdate();
+    const val = Number(costStr);
+    if (isNaN(val) || val < 0) {
+      toast({ title: "Valor inválido", variant: "destructive" });
+      return;
+    }
+    try {
+      await updateCost.mutateAsync({ id: appointment.id, data: { materialCost: val } });
+      toast({ title: "Custo salvo com sucesso" });
+      setIsCostOpen(false);
+      onUpdate();
+    } catch {
+      toast({ title: "Erro ao salvar custo", variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.")) return;
+    try {
+      await deleteAppt.mutateAsync({ id: appointment.id });
+      toast({ title: "Agendamento excluído" });
+      onUpdate();
+    } catch {
+      toast({ title: "Erro ao excluir agendamento", variant: "destructive" });
+    }
   };
 
   return (
-    <div className="flex justify-end gap-2">
+    <div className="flex justify-end gap-2 flex-wrap">
       {appointment.status === 'pending' && (
         <Button size="sm" className="h-9 rounded-lg" onClick={() => handleStatus('confirmed')}>Confirmar</Button>
       )}
@@ -160,13 +185,24 @@ function ActionMenu({ appointment, onUpdate }: { appointment: any, onUpdate: () 
               <p className="text-sm text-muted-foreground">Registre quanto gastou de jumbo/material para este atendimento para calcular seu lucro real.</p>
               <div>
                 <label className="text-sm font-semibold mb-1 block">Valor (R$)</label>
-                <Input type="number" value={costStr} onChange={e => setCostStr(e.target.value)} placeholder="Ex: 85.50" />
+                <Input type="number" min="0" step="0.01" value={costStr} onChange={e => setCostStr(e.target.value)} placeholder="Ex: 85.50" />
               </div>
               <Button onClick={handleSaveCost} className="w-full">Salvar Custo</Button>
             </div>
           </DialogContent>
         </Dialog>
       )}
+
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        onClick={handleDelete}
+        title="Excluir agendamento"
+        disabled={deleteAppt.isPending}
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
     </div>
   );
 }

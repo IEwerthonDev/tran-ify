@@ -22,7 +22,6 @@ export function computeAvailableSlots(
   serviceDurationHours: number,
   date: string
 ): string[] {
-  // If specific dates are configured, use them; otherwise fall back to day-of-week
   const availableDates = (availability as any).availableDates as string[] | undefined;
 
   if (availableDates && availableDates.length > 0) {
@@ -52,7 +51,7 @@ export function computeAvailableSlots(
 
   const slots: string[] = [];
 
-  for (let slotStart = startMins; slotStart <= endMins; slotStart += interval) {
+  for (let slotStart = startMins; slotStart + serviceDurationMins <= endMins; slotStart += interval) {
     const slotEnd = slotStart + serviceDurationMins;
 
     let blocked = false;

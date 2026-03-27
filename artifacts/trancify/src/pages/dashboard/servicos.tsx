@@ -138,8 +138,8 @@ function ServiceForm({ initialData, onSuccess }: { initialData?: any, onSuccess:
     durationHours: initialData?.durationHours?.toString() || "4",
     priceSmall: initialData?.priceSmall?.toString() || "",
     priceLarge: initialData?.priceLarge?.toString() || "",
-    sizeDependent: true
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createMutation = useCreateService();
   const updateMutation = useUpdateService();
@@ -147,29 +147,53 @@ function ServiceForm({ initialData, onSuccess }: { initialData?: any, onSuccess:
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!formData.name.trim() || formData.name.trim().length < 2) {
+      errs.name = "Nome deve ter pelo menos 2 caracteres";
+    }
+    const ps = Number(formData.priceSmall);
+    if (!formData.priceSmall || isNaN(ps) || ps <= 0) {
+      errs.priceSmall = "Informe um preço válido maior que zero";
+    }
+    const pl = Number(formData.priceLarge);
+    if (!formData.priceLarge || isNaN(pl) || pl <= 0) {
+      errs.priceLarge = "Informe um preço válido maior que zero";
+    }
+    if (!isNaN(ps) && !isNaN(pl) && pl < ps) {
+      errs.priceLarge = "O preço maior deve ser igual ou maior que o preço menor";
+    }
+    const dur = Number(formData.durationHours);
+    if (!formData.durationHours || isNaN(dur) || dur <= 0 || dur > 24) {
+      errs.durationHours = "Duração deve ser entre 0.5 e 24 horas";
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
+
     const payload = {
-      ...formData,
+      name: formData.name.trim(),
+      description: formData.description.trim() || undefined,
       durationHours: Number(formData.durationHours),
-      priceSmall: Number(formData.priceSmall.replace(/\D/g,'')) / 100, // handle raw input if masked, simplified here
-      priceLarge: Number(formData.priceLarge.replace(/\D/g,'')) / 100,
+      priceSmall: Number(formData.priceSmall),
+      priceLarge: Number(formData.priceLarge),
     };
-    // simple coercion if user types pure numbers
-    if(!payload.priceSmall) payload.priceSmall = Number(formData.priceSmall);
-    if(!payload.priceLarge) payload.priceLarge = Number(formData.priceLarge);
 
     try {
       if (initialData) {
         await updateMutation.mutateAsync({ id: initialData.id, data: payload });
-        toast({ title: "Serviço atualizado" });
+        toast({ title: "Serviço atualizado com sucesso!" });
       } else {
         await createMutation.mutateAsync({ data: payload });
-        toast({ title: "Serviço criado" });
+        toast({ title: "Serviço criado com sucesso!" });
       }
       onSuccess();
-    } catch (err) {
-      toast({ title: "Erro ao salvar", variant: "destructive" });
+    } catch {
+      toast({ title: "Erro ao salvar serviço", variant: "destructive" });
     }
   };
 
@@ -177,31 +201,66 @@ function ServiceForm({ initialData, onSuccess }: { initialData?: any, onSuccess:
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="text-sm font-semibold mb-1 block">Nome da Trança</label>
-        <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ex: Box Braids, Nagô..." />
+        <Input
+          value={formData.name}
+          onChange={e => { setFormData({...formData, name: e.target.value}); setErrors(p => ({...p, name: ""})); }}
+          placeholder="Ex: Box Braids, Nagô..."
+          className={errors.name ? "border-destructive" : ""}
+        />
+        {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
       </div>
       <div>
-        <label className="text-sm font-semibold mb-1 block">Descrição</label>
-        <textarea 
-          className="flex min-h-[80px] w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 py-2 text-base focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10" 
-          value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Detalhes adicionais..." 
+        <label className="text-sm font-semibold mb-1 block">Descrição <span className="text-muted-foreground font-normal">(opcional)</span></label>
+        <textarea
+          className="flex min-h-[80px] w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 py-2 text-base focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10"
+          value={formData.description}
+          onChange={e => setFormData({...formData, description: e.target.value})}
+          placeholder="Detalhes adicionais..."
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-semibold mb-1 block">Preço (Meio das costas)</label>
-          <Input required type="number" step="0.01" value={formData.priceSmall} onChange={e => setFormData({...formData, priceSmall: e.target.value})} placeholder="150.00" />
+          <label className="text-sm font-semibold mb-1 block">Preço — Meio das costas (R$)</label>
+          <Input
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={formData.priceSmall}
+            onChange={e => { setFormData({...formData, priceSmall: e.target.value}); setErrors(p => ({...p, priceSmall: ""})); }}
+            placeholder="150.00"
+            className={errors.priceSmall ? "border-destructive" : ""}
+          />
+          {errors.priceSmall && <p className="text-xs text-destructive mt-1">{errors.priceSmall}</p>}
         </div>
         <div>
-          <label className="text-sm font-semibold mb-1 block">Preço (Cintura/Bumbum)</label>
-          <Input required type="number" step="0.01" value={formData.priceLarge} onChange={e => setFormData({...formData, priceLarge: e.target.value})} placeholder="250.00" />
+          <label className="text-sm font-semibold mb-1 block">Preço — Cintura/Bumbum (R$)</label>
+          <Input
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={formData.priceLarge}
+            onChange={e => { setFormData({...formData, priceLarge: e.target.value}); setErrors(p => ({...p, priceLarge: ""})); }}
+            placeholder="250.00"
+            className={errors.priceLarge ? "border-destructive" : ""}
+          />
+          {errors.priceLarge && <p className="text-xs text-destructive mt-1">{errors.priceLarge}</p>}
         </div>
       </div>
       <div>
         <label className="text-sm font-semibold mb-1 block">Duração média (horas)</label>
-        <Input required type="number" value={formData.durationHours} onChange={e => setFormData({...formData, durationHours: e.target.value})} />
+        <Input
+          type="number"
+          step="0.5"
+          min="0.5"
+          max="24"
+          value={formData.durationHours}
+          onChange={e => { setFormData({...formData, durationHours: e.target.value}); setErrors(p => ({...p, durationHours: ""})); }}
+          className={errors.durationHours ? "border-destructive" : ""}
+        />
+        {errors.durationHours && <p className="text-xs text-destructive mt-1">{errors.durationHours}</p>}
       </div>
       <Button type="submit" className="w-full h-14 text-lg" disabled={isPending}>
-        {isPending ? "Salvando..." : "Salvar Serviço"}
+        {isPending ? "Salvando..." : initialData ? "Salvar Alterações" : "Criar Serviço"}
       </Button>
     </form>
   );

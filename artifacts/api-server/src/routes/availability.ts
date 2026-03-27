@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, availabilityTable, appointmentsTable, servicesTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { requireTenant, type AuthRequest } from "../lib/auth.js";
 import { computeAvailableSlots } from "../lib/availability.js";
 import { z } from "zod";
@@ -101,34 +101,16 @@ router.get("/public/:tenantId", async (req, res) => {
       return;
     }
 
-    const existingAppointments = await db
-      .select({
-        time: appointmentsTable.time,
-        serviceId: appointmentsTable.serviceId,
-      })
-      .from(appointmentsTable)
-      .where(
-        and(
-          eq(appointmentsTable.tenantId, tenantId!),
-          eq(appointmentsTable.date, date),
-          eq(appointmentsTable.status, "cancelled")
-        )
-      );
-
-    const allAppointmentsOnDay = await db
+    const activeAppts = await db
       .select({ time: appointmentsTable.time, serviceId: appointmentsTable.serviceId })
       .from(appointmentsTable)
       .where(
         and(
           eq(appointmentsTable.tenantId, tenantId!),
-          eq(appointmentsTable.date, date)
+          eq(appointmentsTable.date, date),
+          ne(appointmentsTable.status, "cancelled")
         )
       );
-
-    const activeAppts = allAppointmentsOnDay.filter(a => {
-      const fullAppt = allAppointmentsOnDay.find(x => x.time === a.time);
-      return fullAppt !== undefined;
-    });
 
     const appointmentsWithDuration = await Promise.all(
       activeAppts.map(async (appt) => {
