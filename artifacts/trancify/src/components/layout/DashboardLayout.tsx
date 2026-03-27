@@ -63,7 +63,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             T
           </div>
           <span className="font-display font-bold text-2xl text-foreground tracking-tight">
-            Trançify
+            Trancify
           </span>
         </div>
 
@@ -127,7 +127,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             T
           </div>
           <span className="font-display font-bold text-lg text-foreground tracking-tight">
-            Trançify
+            Trancify
           </span>
         </div>
         <button
@@ -170,7 +170,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     T
                   </div>
                   <span className="font-display font-bold text-lg text-foreground">
-                    Trançify
+                    Trancify
                   </span>
                 </div>
                 <button

@@ -43,7 +43,7 @@ export default function LoginPage() {
             <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 mx-auto mb-6">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-display font-bold text-foreground mb-2 tracking-tight">Bem-vinda ao Trançify</h1>
+            <h1 className="text-4xl font-display font-bold text-foreground mb-2 tracking-tight">Bem-vinda ao Trancify</h1>
             <p className="text-muted-foreground text-lg">A plataforma definitiva para trancistas.</p>
           </div>
 
@@ -80,7 +80,7 @@ export default function LoginPage() {
           </div>
           
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Quer usar o Trançify no seu salão? <br/>
+            Quer usar o Trancify no seu salão? <br/>
             <a href="https://trancify.com" className="text-primary font-semibold hover:underline">Fale com nossa equipe</a>
           </p>
         </motion.div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
         {/* landing page hero scenic mountain landscape - using Unsplash as placeholder if generated image fails, but utilizing base path */}
         <img 
           src={`${import.meta.env.BASE_URL}images/login-hero.png`} 
-          alt="Trançify Hero" 
+          alt="Trancify Hero" 
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

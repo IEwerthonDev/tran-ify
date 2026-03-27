@@ -1,8 +1,8 @@
-# Workspace — Trançify SaaS
+# Workspace — Trancify SaaS
 
 ## Overview
 
-Trançify is a multi-tenant SaaS scheduling platform for Black hair braiding salons (trancistas) in Brazil. It is a pnpm monorepo with a React + Vite frontend, Express API server, and PostgreSQL database.
+Trancify is a multi-tenant SaaS scheduling platform for Black hair braiding salons (trancistas) in Brazil. It is a pnpm monorepo with a React + Vite frontend, Express API server, and PostgreSQL database.
 
 ## Credentials (Development)
 

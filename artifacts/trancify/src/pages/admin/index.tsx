@@ -22,7 +22,7 @@ export default function AdminOverview() {
     <DashboardLayout>
       <div className="mb-10">
         <h1 className="text-4xl font-display font-bold text-foreground">Visão Geral da Plataforma</h1>
-        <p className="text-muted-foreground mt-2 text-lg">Estatísticas globais do Trançify.</p>
+        <p className="text-muted-foreground mt-2 text-lg">Estatísticas globais do Trancify.</p>
       </div>
 
       {/* Stats Grid */}
