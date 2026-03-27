@@ -66,26 +66,29 @@ export default function AdminOverview() {
               Nenhum dado disponível ainda.
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
-              <BarChart data={chartData} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 12,
-                    color: "hsl(var(--foreground))",
-                  }}
-                  formatter={(val: any, name: string) => {
-                    if (name === "revenue") return [formatCurrency(val), "Receita"];
-                    return [val, "Agendamentos"];
-                  }}
-                />
-                <Bar dataKey="appointments" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-hidden">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={chartData} barCategoryGap="30%" margin={{ left: -10, right: 4, top: 4, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} width={36} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 12,
+                      color: "hsl(var(--foreground))",
+                      fontSize: 13,
+                    }}
+                    formatter={(val: any, name: string) => {
+                      if (name === "revenue") return [formatCurrency(val), "Receita"];
+                      return [val, "Agendamentos"];
+                    }}
+                  />
+                  <Bar dataKey="appointments" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 

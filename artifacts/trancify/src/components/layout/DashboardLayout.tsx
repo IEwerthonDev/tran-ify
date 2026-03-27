@@ -278,11 +278,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </AnimatePresence>
 
       {/* ── Main Content ── */}
-      <main className="flex-1 md:pl-72 flex flex-col min-h-screen">
+      <main className="flex-1 md:pl-72 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         {/* top spacer for mobile header */}
         <div className="h-16 md:hidden shrink-0" />
 
-        <div className="flex-1 p-4 sm:p-8 lg:p-10 max-w-7xl mx-auto w-full pb-24 md:pb-10">
+        <div className="flex-1 p-4 sm:p-8 lg:p-10 max-w-7xl mx-auto w-full pb-24 md:pb-10 min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

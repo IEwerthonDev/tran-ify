@@ -51,32 +51,30 @@ export default function AgendamentosPage() {
           {/* ── Mobile card list ── */}
           <div className="md:hidden space-y-3">
             {filtered.map(app => (
-              <div key={app.id} className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
+              <div key={app.id} className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm overflow-hidden">
+                <div className="flex items-start justify-between mb-3 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className="bg-primary/10 text-primary p-2 rounded-lg shrink-0">
                       <Calendar className="w-4 h-4" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-bold text-foreground text-sm">{format(parseISO(app.date), "dd/MM/yyyy")}</div>
                       <div className="text-xs text-muted-foreground">{app.time}</div>
                     </div>
                   </div>
-                  <StatusBadge status={app.status} />
+                  <div className="shrink-0"><StatusBadge status={app.status} /></div>
                 </div>
-                <div className="mb-2">
-                  <div className="font-semibold text-foreground">{app.clientName}</div>
-                  <div className="text-sm text-muted-foreground">{app.clientPhone || "Sem telefone"}</div>
+                <div className="mb-2 min-w-0">
+                  <div className="font-semibold text-foreground truncate">{app.clientName}</div>
+                  <div className="text-sm text-muted-foreground truncate">{app.clientPhone || "Sem telefone"}</div>
                 </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{app.serviceName}</div>
-                    <div className="text-sm text-primary font-bold">{formatCurrency(app.servicePrice)}</div>
-                  </div>
+                <div className="mb-3 min-w-0">
+                  <div className="text-sm font-medium text-foreground truncate">{app.serviceName}</div>
+                  <div className="text-sm text-primary font-bold">{formatCurrency(app.servicePrice)}</div>
                 </div>
-                <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                <div className="flex items-center gap-2 pt-3 border-t border-border/50 overflow-hidden">
                   <DetailModal appointment={app} />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <ActionMenu appointment={app} onUpdate={refetch} />
                   </div>
                 </div>
@@ -350,7 +348,7 @@ function ActionMenu({ appointment, onUpdate }: { appointment: any, onUpdate: () 
   };
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap w-full min-w-0">
       {appointment.status === 'pending' && (
         <Button size="sm" className="h-8 rounded-lg text-xs px-3" onClick={() => handleStatus('confirmed')}>Confirmar</Button>
       )}

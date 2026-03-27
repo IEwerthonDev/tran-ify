@@ -104,31 +104,34 @@ export default function RelatoriosPage() {
               Nenhum dado no período selecionado.
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={220} className="sm:!h-[260px]">
-              <BarChart data={chartData} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 12,
-                    color: "hsl(var(--foreground))",
-                  }}
-                  formatter={(val: any, name: string) => [
-                    formatCurrency(val),
-                    name === "revenue" ? "Receita" : "Lucro",
-                  ]}
-                />
-                <Legend
-                  formatter={(value) => (value === "revenue" ? "Receita" : "Lucro")}
-                  wrapperStyle={{ paddingTop: 16, fontSize: 13 }}
-                />
-                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="profit" fill="hsl(160, 60%, 45%)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-hidden">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={chartData} barCategoryGap="30%" margin={{ left: -10, right: 4, top: 4, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} width={48} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 12,
+                      color: "hsl(var(--foreground))",
+                      fontSize: 13,
+                    }}
+                    formatter={(val: any, name: string) => [
+                      formatCurrency(val),
+                      name === "revenue" ? "Receita" : "Lucro",
+                    ]}
+                  />
+                  <Legend
+                    formatter={(value) => (value === "revenue" ? "Receita" : "Lucro")}
+                    wrapperStyle={{ paddingTop: 12, fontSize: 12 }}
+                  />
+                  <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="profit" fill="hsl(160, 60%, 45%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 
@@ -189,17 +192,17 @@ export default function RelatoriosPage() {
 
 function StatCard({ title, value, icon: Icon, color, trend }: any) {
   return (
-    <div className="bg-card p-4 sm:p-6 rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group">
+    <div className="bg-card p-3 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/50 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow relative overflow-hidden group min-w-0">
       <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-20 transition-transform group-hover:scale-150 ${color}`} />
-      <div className="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
-        <h3 className="text-muted-foreground font-medium text-xs sm:text-sm leading-tight pr-1">{title}</h3>
-        <div className={`p-2 sm:p-3 rounded-xl shrink-0 ${color}`}>
-          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+      <div className="flex items-start justify-between mb-2 sm:mb-4 relative z-10 gap-1">
+        <h3 className="text-muted-foreground font-medium text-[11px] sm:text-sm leading-tight">{title}</h3>
+        <div className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${color}`}>
+          <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
         </div>
       </div>
-      <div className="relative z-10">
-        <span className="text-xl sm:text-3xl font-bold text-foreground font-display tracking-tight">{value}</span>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">{trend}</p>
+      <div className="relative z-10 min-w-0">
+        <span className="text-base sm:text-3xl font-bold text-foreground font-display tracking-tight break-words leading-tight block">{value}</span>
+        <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 leading-tight">{trend}</p>
       </div>
     </div>
   );
