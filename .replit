@@ -52,3 +52,4 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
+CALLMEBOT_PHONE = "5511944232494"
