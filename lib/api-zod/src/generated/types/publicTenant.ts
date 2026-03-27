@@ -13,4 +13,5 @@ export interface PublicTenant {
   whatsapp?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
+  secondaryColor?: string | null;
 }

@@ -16,6 +16,7 @@ export interface Tenant {
   whatsapp?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
+  secondaryColor?: string | null;
   status: TenantStatus;
   plan: TenantPlan;
   createdAt: Date;

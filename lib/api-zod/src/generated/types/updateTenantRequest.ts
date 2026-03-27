@@ -11,4 +11,5 @@ export interface UpdateTenantRequest {
   whatsapp?: string;
   logoUrl?: string;
   primaryColor?: string;
+  secondaryColor?: string;
 }

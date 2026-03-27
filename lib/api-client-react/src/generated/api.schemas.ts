@@ -85,6 +85,7 @@ export interface Tenant {
   whatsapp?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
+  secondaryColor?: string | null;
   status: TenantStatus;
   plan: TenantPlan;
   createdAt: string;
@@ -97,6 +98,7 @@ export interface PublicTenant {
   whatsapp?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
+  secondaryColor?: string | null;
 }
 
 export interface UpdateTenantRequest {
@@ -104,6 +106,7 @@ export interface UpdateTenantRequest {
   whatsapp?: string;
   logoUrl?: string;
   primaryColor?: string;
+  secondaryColor?: string;
 }
 
 export interface Service {

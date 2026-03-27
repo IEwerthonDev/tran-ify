@@ -74,6 +74,7 @@ export const GetMyTenantResponse = zod.object({
   whatsapp: zod.string().nullish(),
   logoUrl: zod.string().nullish(),
   primaryColor: zod.string().nullish(),
+  secondaryColor: zod.string().nullish(),
   status: zod.enum(["active", "blocked"]),
   plan: zod.enum(["basic", "professional", "enterprise"]),
   createdAt: zod.date(),
@@ -87,6 +88,7 @@ export const UpdateMyTenantBody = zod.object({
   whatsapp: zod.string().optional(),
   logoUrl: zod.string().optional(),
   primaryColor: zod.string().optional(),
+  secondaryColor: zod.string().optional(),
 });
 
 export const UpdateMyTenantResponse = zod.object({
@@ -97,6 +99,7 @@ export const UpdateMyTenantResponse = zod.object({
   whatsapp: zod.string().nullish(),
   logoUrl: zod.string().nullish(),
   primaryColor: zod.string().nullish(),
+  secondaryColor: zod.string().nullish(),
   status: zod.enum(["active", "blocked"]),
   plan: zod.enum(["basic", "professional", "enterprise"]),
   createdAt: zod.date(),
@@ -116,6 +119,7 @@ export const GetPublicTenantResponse = zod.object({
   whatsapp: zod.string().nullish(),
   logoUrl: zod.string().nullish(),
   primaryColor: zod.string().nullish(),
+  secondaryColor: zod.string().nullish(),
 });
 
 /**
